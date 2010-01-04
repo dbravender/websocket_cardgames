@@ -1,7 +1,6 @@
 from game import Game, Bid
 from deck import Suits, Values, Card
 from player import Player
-from pprint import pprint
 
 def test_setup():
     p1 = Player('Alice')
@@ -14,6 +13,7 @@ def test_setup():
     g.message(p2, p2)
     g.message(p3, p3)
     g.message(p4, p4)
+    print p1.hand[0]
     assert g.state == g.bid
     g.message(p1, Bid(p1, Suits['Hearts']))
     g.message(p2, Bid(p2, Suits['Hearts']))

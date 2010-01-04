@@ -2,6 +2,7 @@ from player import Player
 from deck import Deck, Card, Suit
 from collections import defaultdict
 from itertools import cycle
+import hashlib
 
 class IncorrectMessageType(Exception): pass
 class GameProcedureError(Exception): pass
@@ -14,11 +15,17 @@ class Bid(object):
         self.player = player
         self.value = value
 
+    def __repr__(self):
+        return repr(self.value)
+
 class Game(object):
     def __init__(self):
         self.players = []
         self.state = self.players_join
         self.next_player = None
+
+    def hash(self):
+        return hashlib.sha1(str(id(self))).hexdigest()
 
     def players_join(self, player):
         if not isinstance(player, Player):
@@ -27,6 +34,7 @@ class Game(object):
         if len(self.players) >= 4:
             self.dealers = cycle(self.players)
             self.deal()
+    players_join.__name__ = 'joined'
 
     def deal(self):
         self.deck = Deck()
@@ -93,6 +101,7 @@ class Game(object):
                 self.end_hand()
             else:
                 self.start_trick()
+    play_card.__name__ = 'played the'
 
     def end_hand(self):
         for ps in self.partners:
@@ -102,9 +111,17 @@ class Game(object):
         self.deal()
 
     def send(self, message):
+        print message
         pass
 
     def message(self, player, message):
         if self.next_player and player != self.next_player:
             raise OutOfTurn()
-        return self.state(message)
+        self.current_player = player
+        self.current_state = self.state
+        try:
+            response = self.state(message) or ''
+            self.send(str(self.current_player) + ' ' + self.current_state.__name__ + ' ' + str(message))
+            self.send(str(self.next_player) + "'s turn")
+        except Exception, e:
+            print e
