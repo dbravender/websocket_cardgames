@@ -3,10 +3,18 @@ from deck import Deck, Card, Suit
 from collections import defaultdict
 from itertools import cycle
 import hashlib
+import wirepointer
 
-class IncorrectMessageType(Exception): pass
-class GameProcedureError(Exception): pass
-class OutOfTurn(Exception): pass
+class GameException(Exception): pass
+class IncorrectMessageType(GameException): pass
+class GameProcedureError(GameException): pass
+class OutOfTurn(GameException): pass
+class MustFollowSuit(GameException): pass
+
+class Message(object):
+    def __init__(self, player, message):
+        self.player = player
+        self.message = message
 
 class Bid(object):
     ''' player - player that made the bid
@@ -14,6 +22,7 @@ class Bid(object):
     def __init__(self, player, value):
         self.player = player
         self.value = value
+        wirepointer.remember(self)
 
     def __repr__(self):
         return repr(self.value)
@@ -21,20 +30,22 @@ class Bid(object):
 class Game(object):
     def __init__(self):
         self.players = []
-        self.state = self.players_join
+        self.state = 'players_join'
         self.next_player = None
-
-    def hash(self):
-        return hashlib.sha1(str(id(self))).hexdigest()
+        self.named_high = None
+        self.named_suit = None
+        self.partners = []
+        self.tricks_won = {}
+        wirepointer.remember(self)
 
     def players_join(self, player):
         if not isinstance(player, Player):
             raise IncorrectMessageType('Expected a player')
         self.players.append(player)
+        self.response = u'%s joined'.encode('utf-8') % player
         if len(self.players) >= 4:
             self.dealers = cycle(self.players)
             self.deal()
-    players_join.__name__ = 'joined'
 
     def deal(self):
         self.deck = Deck()
@@ -48,37 +59,56 @@ class Game(object):
         self.tricks_played = 0
         self.bids = {}
         self.partners = []
+        self.trick_cards = []
+        self.old_trick_cards = []
         self.tricks_won = defaultdict(lambda: 0)
-        self.state = self.bid
+        self.state = 'bid'
         self.next_player = self.dealers.next()
         self.lead_player = self.next_player
+        self.send('New hand')
 
     def bid(self, bid):
         if not isinstance(bid, Bid):
             raise IncorrectMessageType('Expected a bid')
         if self.bids.get(bid.value, None):
             # Someone else already bid this value
-            self.bids[bid.value].append(bid.player)
             if isinstance(bid.value, Suit):
                 if self.named_suit:
                     raise GameProcedureError('A suit has already been named')
+                self.bids[bid.value].append(bid.player)
                 self.partners.append(self.bids[bid.value])
                 self.named_suit = bid.value
+                self.response = u'%s and %s name %s'.encode('utf-8') % \
+                                                      (self.bids[bid.value][0],
+                                                       self.bids[bid.value][1],
+                                                       self.named_suit)
             else:
                 if self.named_high:
                     raise GameProcedureError('A high has already been named')
+                self.bids[bid.value].append(bid.player)
                 self.partners.append(self.bids[bid.value])
                 self.named_high = bid.value
+                self.response = u'%s and %s name %s'.encode('utf-8') % \
+                                                      (self.bids[bid.value][0],
+                                                       self.bids[bid.value][1],
+                                                       self.named_high)
         else:
             self.bids[bid.value] = [bid.player]
+            self.response = u'%s bids %s'.encode('utf-8') % (bid.player, bid.value)
         self.next_player = self.dealers.next()
+        if len(self.partners):
+            # Bid goes to the next player who hasn't found a partner yet
+            while self.next_player in self.partners[0]:
+                self.next_player = self.dealers.next()
         if self.named_suit and self.named_high:
+            for player in self.players:
+                player.sort_hand(self.named_high, self.named_suit)
             self.next_player = self.lead_player
             self.start_trick()
 
     def start_trick(self):
         self.trick_cards = []
-        self.state = self.play_card
+        self.state = 'play_card'
 
     def play_card(self, card):
         if not isinstance(card, Card):
@@ -89,19 +119,26 @@ class Game(object):
             self.trick_sorter = Card.sort(trump   =self.named_suit,
                                           led_suit=card.suit,
                                           highest =self.named_high)
+            self.led_suit = card.suit
+        else:
+            if card.suit != self.led_suit and self.led_suit in (x.suit for x in self.current_player.hand):
+                raise MustFollowSuit('Must follow suit!')
         self.trick_cards.append(card)
+        self.current_player.hand.remove(card)
+        self.response = u'%s played %s'.encode('utf-8') % (self.current_player.name, card)
         self.next_player = self.players[(self.players.index(self.next_player) + 1) % len(self.players)]
         if len(self.trick_cards) >= 4:
             self.trick_cards.sort(self.trick_sorter)
             winner = self.trick_cards[0].player
             self.tricks_won[winner] += 1
             self.next_player = winner
+            self.response = u'Trick won by %s'.encode('utf-8') % winner
             self.tricks_played += 1
             if self.tricks_played >= 13:
                 self.end_hand()
             else:
+                self.last_trick_cards = self.trick_cards[:]
                 self.start_trick()
-    play_card.__name__ = 'played the'
 
     def end_hand(self):
         for ps in self.partners:
@@ -110,18 +147,30 @@ class Game(object):
             ps[1].score += score
         self.deal()
 
-    def send(self, message):
-        print message
-        pass
+    def send(self, message, recipient=None):
+        if not recipient:
+            for player in self.players:
+                if hasattr(player, 'socket'):
+                    player.socket.write_message(message)
+        else:
+            if hasattr(recipient, 'socket'):
+                recipient.socket.write_message(message)
 
     def message(self, player, message):
+        if isinstance(message, str):
+            self.send(message)
         if self.next_player and player != self.next_player:
-            raise OutOfTurn()
+            raise OutOfTurn('Out of Turn!')
         self.current_player = player
-        self.current_state = self.state
+        self.current_state = getattr(self, self.state)
         try:
-            response = self.state(message) or ''
-            self.send(str(self.current_player) + ' ' + self.current_state.__name__ + ' ' + str(message))
-            self.send(str(self.next_player) + "'s turn")
-        except Exception, e:
-            print e
+            self.response = ''
+            getattr(self, self.state)(message)
+            self.send(self.response)
+            if self.next_player:
+                self.send(getattr(self, self.state).__name__, self.next_player)
+        except GameException, e:
+            if hasattr(player, 'socket'):
+                player.socket.write_message(str(e))
+            else:
+                print str(e)

@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from random import shuffle
+import wirepointer
 
 class Value(object):
     def __init__(self, name, value):
         self.name = name
         self.value = value
+        wirepointer.remember(self)
     
     def __repr__(self):
         return self.name.encode('utf-8')
@@ -28,6 +30,7 @@ class Suit(object):
     def __init__(self, name, symbol):
         self.name = name
         self.symbol = symbol
+        wirepointer.remember(self)
 
     def __repr__(self):
         return self.symbol.encode('utf-8')
@@ -42,12 +45,12 @@ class Card(object):
         self.value = value
         self.suit = suit
         self.player = player
-    
+        wirepointer.remember(self)
+
     @classmethod
     def sort(kls, trump, led_suit, highest):
         def sorter(a, b):
             if a.suit == b.suit:
-                a_value = a.value.value
                 if a.value.value > highest.value and b.value.value < highest.value:
                     return 1
                 if b.value.value > highest.value and a.value.value < highest.value:
@@ -68,13 +71,17 @@ class Card(object):
                 return 0
         return sorter
 
+    def image(self):
+        return u'<img src="/static/cards/%s%s.png"/>'.encode('utf-8') % (self.value.name, self.suit.name)
+
     def __repr__(self):
-        return u'%s%s'.encode('utf-8') % (self.value, self.suit)
+        return u'%s%s'.encode('utf-8') % (self.value.name, self.suit.name)
 
 class Deck(object):
     def __init__(self):
         self.cards = []
-        for suit in Suits.items():
-            for value in Values.items():
+        for suit in Suits.values():
+            for value in Values.values():
                 self.cards.append(Card(value, suit))
         shuffle(self.cards)
+        wirepointer.remember(self)
