@@ -17,7 +17,8 @@ loader = tornado.template.Loader(os.path.join(os.path.join(os.path.realpath(__fi
 
 class NewGameHandler(tornado.web.RequestHandler):
     def get(self):
-        game = Game()
+        players = int(self.get_argument('players', 4))
+        game = Game(players)
         application.add_handlers(r'.*$', [(r'/' + str(id(game)), NewPlayerHandler, {'game': game})])
         self.redirect('/' + str(id(game)))
 
