@@ -61,17 +61,20 @@ class PlayerWebSocket(tornado.websocket.WebSocketHandler):
         self.receive_message(self.on_message)
     
     def on_message(self, message):
-        command, params = message.split(' ')[0], ' '.join(message.split(' ')[1:])
-        if command == 'bid':
-            bid = Bid(self.player, wirepointer.get_object(params))
-            self.player.game.message(self.player, bid)
-        if command == 'play':
-            card = wirepointer.get_object(params)
-            self.player.game.message(self.player, card)
-        if command == 'name':
-            old_name = self.player.name
-            self.player.name = params
-            self.player.game.send(u'%s now goes by %s'.encode('utf-8') % (old_name, self.player.name))
+        try:
+            command, params = message.split(' ')[0], ' '.join(message.split(' ')[1:])
+            if command == 'bid':
+                bid = Bid(self.player, wirepointer.get_object(params))
+                self.player.game.message(self.player, bid)
+            if command == 'play':
+                card = wirepointer.get_object(params)
+                self.player.game.message(self.player, card)
+            if command == 'name':
+                old_name = self.player.name
+                self.player.name = params
+                self.player.game.send(u'%s now goes by %s'.encode('utf-8') % (old_name, self.player.name))
+        except Exception, e:
+            self.player.socket.write_message(str(e))
         self.receive_message(self.on_message)
 
 settings = {'static_path': os.path.join(os.path.realpath(__file__ + '/../'), 'static')}
