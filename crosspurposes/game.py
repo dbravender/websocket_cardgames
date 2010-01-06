@@ -28,14 +28,16 @@ class Bid(object):
         return repr(self.value)
 
 class Game(object):
-    def __init__(self):
+    def __init__(self, number_of_players=4):
         self.players = []
+        self.number_of_players = number_of_players
         self.state = 'players_join'
         self.next_player = None
         self.named_high = None
         self.named_suit = None
         self.partners = []
         self.tricks_won = {}
+        self.deck = Deck()
         wirepointer.remember(self)
 
     def players_join(self, player):
@@ -43,12 +45,16 @@ class Game(object):
             raise IncorrectMessageType('Expected a player')
         self.players.append(player)
         self.response = u'%s joined'.encode('utf-8') % player
-        if len(self.players) >= 4:
+        if len(self.players) >= self.number_of_players:
             self.dealers = cycle(self.players)
             self.deal()
 
     def deal(self):
-        self.deck = Deck()
+        if self.number_of_players == 2:
+            if not len(self.deck.cards):
+                self.deck = Deck()
+        else:
+            self.deck = Deck()
         for player in self.players:
             hand = self.deck.cards[len(self.deck.cards)-13:]
             hand.sort()
@@ -70,28 +76,34 @@ class Game(object):
     def bid(self, bid):
         if not isinstance(bid, Bid):
             raise IncorrectMessageType('Expected a bid')
-        if self.bids.get(bid.value, None):
+        if self.number_of_players == 2 or self.bids.get(bid.value, None):
             # Someone else already bid this value
             if isinstance(bid.value, Suit):
                 if self.named_suit:
                     raise GameProcedureError('A suit has already been named')
-                self.bids[bid.value].append(bid.player)
-                self.partners.append(self.bids[bid.value])
-                self.named_suit = bid.value
-                self.response = u'%s and %s name %s'.encode('utf-8') % \
-                                                      (self.bids[bid.value][0],
-                                                       self.bids[bid.value][1],
-                                                       self.named_suit)
+                if self.number_of_players == 2:
+                    self.named_suit = bid.value
+                else:
+                    self.bids[bid.value].append(bid.player)
+                    self.partners.append(self.bids[bid.value])
+                    self.named_suit = bid.value
+                    self.response = u'%s and %s name %s'.encode('utf-8') % \
+                                                          (self.bids[bid.value][0],
+                                                           self.bids[bid.value][1],
+                                                           self.named_suit)
             else:
                 if self.named_high:
                     raise GameProcedureError('A high has already been named')
-                self.bids[bid.value].append(bid.player)
-                self.partners.append(self.bids[bid.value])
-                self.named_high = bid.value
-                self.response = u'%s and %s name %s'.encode('utf-8') % \
-                                                      (self.bids[bid.value][0],
-                                                       self.bids[bid.value][1],
-                                                       self.named_high)
+                if self.number_of_players == 2:
+                    self.named_high = bid.value
+                else:
+                    self.bids[bid.value].append(bid.player)
+                    self.partners.append(self.bids[bid.value])
+                    self.named_high = bid.value
+                    self.response = u'%s and %s name %s'.encode('utf-8') % \
+                                                          (self.bids[bid.value][0],
+                                                           self.bids[bid.value][1],
+                                                           self.named_high)
         else:
             self.bids[bid.value] = [bid.player]
             self.response = u'%s bids %s'.encode('utf-8') % (bid.player, bid.value)
@@ -127,7 +139,7 @@ class Game(object):
         self.current_player.hand.remove(card)
         self.response = u'%s played %s'.encode('utf-8') % (self.current_player.name, card)
         self.next_player = self.players[(self.players.index(self.next_player) + 1) % len(self.players)]
-        if len(self.trick_cards) >= 4:
+        if len(self.trick_cards) >= self.number_of_players:
             self.trick_cards.sort(self.trick_sorter)
             winner = self.trick_cards[0].player
             self.tricks_won[winner] += 1
@@ -141,10 +153,21 @@ class Game(object):
                 self.start_trick()
 
     def end_hand(self):
-        for ps in self.partners:
-            score = (self.tricks_won[ps[0]] + 1) * (self.tricks_won[ps[1]] + 1)
-            ps[0].score += score
-            ps[1].score += score
+        if self.number_of_players == 2:
+            previous_round = getattr(self, 'previous_round', None)
+            if previous_round:
+                for player in self.players:
+                    player.score += previous_round[player] * self.tricks_won[player]
+                self.previous_round = {}
+            else:
+                self.previous_round = {}
+                for player in self.players:
+                    previous_round[player] = self.tricks_won[player] + 1
+        else:
+            for ps in self.partners:
+                score = (self.tricks_won[ps[0]] + 1) * (self.tricks_won[ps[1]] + 1)
+                ps[0].score += score
+                ps[1].score += score
         self.deal()
 
     def send(self, message, recipient=None):
