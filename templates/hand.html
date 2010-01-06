@@ -30,7 +30,8 @@
 {% for otherplayer in player.game.players %}
 <tr>
   <td>{{ otherplayer.name }}</td>
-  <td>{{ player.game.tricks_won.get(otherplayer, 0) }}</td>
+  <td>{{ len(player.game.previous_round) and str(player.game.previous_round.get(otherplayer, 0)) + ' * ' }}
+      {{ player.game.tricks_won.get(otherplayer, 0) }}</td>
   <td>{{ otherplayer.score }}</td>
 </tr>
 {% end %}

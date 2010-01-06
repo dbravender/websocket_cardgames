@@ -38,6 +38,7 @@ class Game(object):
         self.partners = []
         self.tricks_won = {}
         self.deck = Deck()
+        self.previous_round = {}
         wirepointer.remember(self)
 
     def players_join(self, player):
@@ -83,6 +84,7 @@ class Game(object):
                     raise GameProcedureError('A suit has already been named')
                 if self.number_of_players == 2:
                     self.named_suit = bid.value
+                    self.response = u'%s names %s'.encode('utf-8') % (bid.player, bid.value)
                 else:
                     self.bids[bid.value].append(bid.player)
                     self.partners.append(self.bids[bid.value])
@@ -96,6 +98,7 @@ class Game(object):
                     raise GameProcedureError('A high has already been named')
                 if self.number_of_players == 2:
                     self.named_high = bid.value
+                    self.response = u'%s names %s'.encode('utf-8') % (bid.player, bid.value)
                 else:
                     self.bids[bid.value].append(bid.player)
                     self.partners.append(self.bids[bid.value])
@@ -154,15 +157,13 @@ class Game(object):
 
     def end_hand(self):
         if self.number_of_players == 2:
-            previous_round = getattr(self, 'previous_round', None)
-            if previous_round:
+            if len(self.previous_round):
                 for player in self.players:
                     player.score += previous_round[player] * self.tricks_won[player]
                 self.previous_round = {}
             else:
-                self.previous_round = {}
                 for player in self.players:
-                    previous_round[player] = self.tricks_won[player] + 1
+                    self.previous_round[player] = self.tricks_won[player] + 1
         else:
             for ps in self.partners:
                 score = (self.tricks_won[ps[0]] + 1) * (self.tricks_won[ps[1]] + 1)
@@ -180,13 +181,13 @@ class Game(object):
                 recipient.socket.write_message(message)
 
     def message(self, player, message):
-        if isinstance(message, str):
-            self.send(message)
-        if self.next_player and player != self.next_player:
-            raise OutOfTurn('Out of Turn!')
-        self.current_player = player
-        self.current_state = getattr(self, self.state)
         try:
+            if isinstance(message, str):
+                self.send(message)
+            if self.next_player and player != self.next_player:
+                raise OutOfTurn('Out of Turn!')
+            self.current_player = player
+            self.current_state = getattr(self, self.state)
             self.response = ''
             getattr(self, self.state)(message)
             self.send(self.response)
