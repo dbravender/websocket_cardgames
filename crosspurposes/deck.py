@@ -51,9 +51,9 @@ class Card(object):
     def sort(kls, trump, led_suit, highest):
         def sorter(a, b):
             if a.suit == b.suit:
-                if a.value.value > highest.value and b.value.value < highest.value:
+                if a.value.value > highest.value and b.value.value <= highest.value:
                     return 1
-                if b.value.value > highest.value and a.value.value < highest.value:
+                if b.value.value > highest.value and a.value.value <= highest.value:
                     return -1
                 if a.value.value > b.value.value:
                     return -1
