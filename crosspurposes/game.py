@@ -159,7 +159,7 @@ class Game(object):
         if self.number_of_players == 2:
             if len(self.previous_round):
                 for player in self.players:
-                    player.score += previous_round[player] * self.tricks_won[player]
+                    player.score += self.previous_round[player] * self.tricks_won[player]
                 self.previous_round = {}
             else:
                 for player in self.players:
