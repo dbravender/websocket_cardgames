@@ -1,11 +1,10 @@
-import random
-import hashlib
+from deck import Values
 
 class Player(object):
-    def __init__(self, name=None, game=None):
+    def __init__(self, name, game):
         self.hand = []
         self.score = 0
-        self.name = name or random.choice(['Fred', 'Bob', 'Lucy', 'Chuck', 'Ted', 'Tadeo'])
+        self.name = name
         self.game = game
         self.callbacks = {}
 
@@ -20,24 +19,14 @@ class Player(object):
         return cid
 
     def bid(self, bid):
-        self.game.message(self, bid)
+        self.game.bid(self, bid)
 
     def play_card(self, card):
-        self.game.message(self, card)
+        self.game.play_card(self, card)
 
     def receive_hand(self, hand):
         self.hand = hand
-        for card in hand:
-            card.player = self
-        def sort(a, b):
-            if a.suit > b.suit:
-                return -1
-            if b.suit > a.suit:
-                return 1
-            if a.value.value > b.value.value:
-                return -1
-            return 1
-        self.hand.sort(sort)
+        self.hand.sort(self.sort_hand(Values['A'], None))
         if hasattr(self, 'socket'):
             self.socket.write_message('new_hand')
 

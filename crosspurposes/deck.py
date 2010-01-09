@@ -38,10 +38,9 @@ Suits = {'Hearts'  : Suit(u'Hearts'  , u'♥'),
          'Clubs'   : Suit(u'Clubs'   , u'♣')}
 
 class Card(object):
-    def __init__(self, value, suit, player=None):
+    def __init__(self, value, suit):
         self.value = value
         self.suit = suit
-        self.player = player
 
     @classmethod
     def sort(kls, trump, led_suit, highest):
