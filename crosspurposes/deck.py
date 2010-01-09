@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from random import shuffle
-import wirepointer
 
 class Value(object):
     def __init__(self, name, value):
         self.name = name
         self.value = value
-        wirepointer.remember(self)
     
     def __repr__(self):
         return self.name.encode('utf-8')
@@ -30,7 +28,6 @@ class Suit(object):
     def __init__(self, name, symbol):
         self.name = name
         self.symbol = symbol
-        wirepointer.remember(self)
 
     def __repr__(self):
         return self.symbol.encode('utf-8')
@@ -45,7 +42,6 @@ class Card(object):
         self.value = value
         self.suit = suit
         self.player = player
-        wirepointer.remember(self)
 
     @classmethod
     def sort(kls, trump, led_suit, highest):
@@ -75,7 +71,7 @@ class Card(object):
         return u'<img src="/static/cards/%s%s.png"/>'.encode('utf-8') % (self.value.name, self.suit.name)
 
     def __repr__(self):
-        return u'%s%s'.encode('utf-8') % (self.value.name, self.suit.name)
+        return u'%s%s'.encode('utf-8') % (self.value.name, self.suit.symbol)
 
 class Deck(object):
     def __init__(self):
@@ -84,4 +80,3 @@ class Deck(object):
             for value in Values.values():
                 self.cards.append(Card(value, suit))
         shuffle(self.cards)
-        wirepointer.remember(self)

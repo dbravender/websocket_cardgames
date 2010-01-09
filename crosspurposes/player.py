@@ -1,6 +1,5 @@
 import random
 import hashlib
-import wirepointer
 
 class Player(object):
     def __init__(self, name=None, game=None):
@@ -8,7 +7,23 @@ class Player(object):
         self.score = 0
         self.name = name or random.choice(['Fred', 'Bob', 'Lucy', 'Chuck', 'Ted', 'Tadeo'])
         self.game = game
-        wirepointer.remember(self)
+        self.callbacks = {}
+
+    def forget(self):
+        self.callbacks = {}
+
+    def remember(self, callback, *args, **kwargs):
+        def doit():
+            callback(*args, **kwargs)
+        cid = str(id(doit))
+        self.callbacks[cid] = doit
+        return cid
+
+    def bid(self, bid):
+        self.game.message(self, bid)
+
+    def play_card(self, card):
+        self.game.message(self, card)
 
     def receive_hand(self, hand):
         self.hand = hand

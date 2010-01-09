@@ -8,10 +8,9 @@ import hashlib
 import random
 import re
 import os
-from crosspurposes.game import Game, Message, Bid
+from crosspurposes.game import Game
 from crosspurposes.player import Player
 from crosspurposes.deck import Suits, Values, Card
-from crosspurposes import wirepointer
 
 loader = tornado.template.Loader(os.path.join(os.path.join(os.path.realpath(__file__) + '/../'), 'templates'))
 
@@ -62,19 +61,9 @@ class PlayerWebSocket(tornado.websocket.WebSocketHandler):
     
     def on_message(self, message):
         try:
-            command, params = message.split(' ')[0], ' '.join(message.split(' ')[1:])
-            if command == 'bid':
-                bid = Bid(self.player, wirepointer.get_object(params))
-                self.player.game.message(self.player, bid)
-            if command == 'play':
-                card = wirepointer.get_object(params)
-                self.player.game.message(self.player, card)
-            if command == 'name':
-                old_name = self.player.name
-                self.player.name = params
-                self.player.game.send(u'%s now goes by %s'.encode('utf-8') % (old_name, self.player.name))
+            self.player.callbacks[message]()
         except Exception, e:
-            self.player.socket.write_message(str(e))
+            self.player.socket.write_message('Uncaught:' + str(e))
         self.receive_message(self.on_message)
 
 settings = {'static_path': os.path.join(os.path.realpath(__file__ + '/../'), 'static')}
