@@ -72,10 +72,19 @@ class Card(object):
     def __repr__(self):
         return u'%s%s'.encode('utf-8') % (self.value.name, self.suit.symbol)
 
-class Deck(object):
+class FullDeck(object):
     def __init__(self):
         self.cards = []
         for suit in Suits.values():
             for value in Values.values():
+                self.cards.append(Card(value, suit))
+        shuffle(self.cards)
+
+class KaiboshDeck(object):
+    def __init__(self):
+        self.cards = []
+        for suit in Suits.values():
+            for value in [Values['9'], Values['10'], Values['J'], 
+                          Values['Q'], Values['K'], Values['A']]:
                 self.cards.append(Card(value, suit))
         shuffle(self.cards)

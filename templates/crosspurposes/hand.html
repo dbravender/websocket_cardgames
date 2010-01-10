@@ -1,0 +1,62 @@
+{% if player.game.next_player == player %}
+<h3>YOUR TURN</h3>
+{% end %}
+
+{{ player.forget() or '' }}
+
+<div>
+<input id="name" value="{{ player.name }}" onchange="ws.send('{{ player.remember(player.rename) }} ' + $('#name').val())"/>
+</div>
+
+{% if player.game.state == 'bid' %}
+
+{% for suit in sorted(suits.values()) %}
+<a href="#" onclick="ws.send('{{ player.remember(player.bid, suit) }}');">{{ suit }}</a> 
+{% end %}
+
+{% for value in sorted(values.values()) %}
+<a href="#" onclick="ws.send('{{ player.remember(player.bid, value) }}');">{{ value }}</a>
+{% end %}
+
+<br/>
+{% end %}
+
+{% for card in player.hand %}
+<a href="#" onclick="ws.send('{{ player.remember(player.play_card, card) }}');">{{ card.image() }}</a>
+{% end %}
+
+<div>
+{% if player.game.state == 'play_card' %}
+{{ player.game.named_high }} {{ player.game.named_suit }}
+{% end %}
+</div>
+
+<table>
+<tr><td>Name</td><td>Tricks</td><td>Total Score</td></tr>
+{% for otherplayer in player.game.players %}
+<tr>
+  <td>{{ otherplayer.name }}</td>
+  <td>{{ len(player.game.previous_round) and str(player.game.previous_round.get(otherplayer, 0)) + ' * ' }}
+      {{ player.game.tricks_won.get(otherplayer, 0) }}</td>
+  <td>{{ otherplayer.score }}</td>
+</tr>
+{% end %}
+</table>
+
+{% if getattr(player.game, 'trick_cards', None) %}
+<div>
+<h3>Current Trick</h3>
+{% for card in player.game.trick_cards %}
+    {{ card.player.name }} {{ card.image() }}
+{% end %}
+</div>
+{% end %}
+
+{% if getattr(player.game, 'last_trick_cards', None) %}
+<div>
+<h3>Last Trick</h3>
+{% for card in player.game.last_trick_cards %}
+    {{ card.player.name }} {{ card.image() }}
+{% end %}
+</div>
+{% end %}

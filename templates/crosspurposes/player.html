@@ -14,12 +14,7 @@ function update_hand() {
 
 $(document).ready(function() {
     ws = new WebSocket('ws://' + location.hostname + ':' + location.port + location.pathname + '/get')
-
-    player_name = prompt('Name', '{{ player.name }}');
-    ws.onopen = function(msg) {
-        ws.send('name ' + player_name);
-    }
-
+    
     ws.onmessage = function(msg) {
         update_hand();
         $('#messages').prepend(msg.data + '<br/>');
@@ -32,9 +27,18 @@ $(document).ready(function() {
 </head>
 
 <body>
-<div id="messages" style="height: 10em; overflow: scroll">
-</div>
 
+<table width="100%" height="100%">
+<tr>
+<td width="200px">
+<div id="messages" style="width: 100%; height: 100%; overflow: scroll">
+</div>
+</td>
+<td valign="top">
 <div id="hand">
 </div>
+</td>
+</tr>
+</table>
+
 </body>

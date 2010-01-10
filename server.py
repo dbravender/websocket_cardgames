@@ -8,16 +8,23 @@ import hashlib
 import random
 import re
 import os
-from crosspurposes.game import Game
-from crosspurposes.player import Player
-from crosspurposes.deck import Suits, Values
+import crosspurposes.game
+import kaibosh.game
+from cardgame.deck import Suits, Values
+import traceback
 
 loader = tornado.template.Loader(os.path.join(os.path.join(os.path.realpath(__file__) + '/../'), 'templates'))
+
+game_factories = {
+    'kaibosh'      : kaibosh.game.KaiboshGame,
+    'crosspurposes': crosspurposes.game.CrossPurposesGame
+}
 
 class NewGameHandler(tornado.web.RequestHandler):
     def get(self):
         players = int(self.get_argument('players', 4))
-        game = Game(players)
+        game_factory = game_factories[self.get_argument('game', 'crosspurposes')]
+        game = game_factory(players)
         application.add_handlers(r'.*$', [(r'/' + str(id(game)), NewPlayerHandler, {'game': game})])
         self.redirect('/' + str(id(game)))
 
@@ -27,16 +34,16 @@ class NewPlayerHandler(tornado.web.RequestHandler):
         super(NewPlayerHandler, self).__init__(*args)
 
     def get(self):
-        player = Player('Player ' + str(len(self.game.players) + 1), game=self.game)
+        player = self.game.player_factory('Player ' + str(len(self.game.players) + 1), game=self.game)
         self.game.add_player(player, player)
         application.add_handlers(r'.*$',
             [(self.request.uri + '/' + str(id(player)),
              PlayerInfo,
-             {'player': player, 'template': 'player.html'})])
+             {'player': player, 'template': self.game.player_template})])
         application.add_handlers(r'.*$',
             [(self.request.uri + '/' + str(id(player)) + '/hand',
              PlayerInfo,
-             {'player': player, 'template': 'hand.html'})])
+             {'player': player, 'template': self.game.hand_template})])
         application.add_handlers(r'.*$',
             [(self.request.uri + '/' + str(id(player)) + '/get',
              PlayerWebSocket,
@@ -63,9 +70,11 @@ class PlayerWebSocket(tornado.websocket.WebSocketHandler):
     
     def on_message(self, message):
         try:
-            self.player.callbacks[message]()
+            params = message.split(' ')
+            self.player.callbacks[params[0]](message=' '.join(params[1:]))
         except Exception, e:
             self.player.socket.write_message('Uncaught:' + str(e))
+            traceback.print_exc()
         self.receive_message(self.on_message)
 
 settings = {'static_path': os.path.join(os.path.realpath(__file__ + '/../'), 'static')}

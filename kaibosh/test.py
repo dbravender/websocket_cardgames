@@ -1,9 +1,9 @@
-from game import CrossPurposesGame, OutOfTurn
+from game import KaiboshGame, OutOfTurn, GameProcedureError
 from cardgame.deck import Suits, Values, Card
 from player import Player
 
 def test_setup():
-    g = CrossPurposesGame()
+    g = KaiboshGame()
     p1 = Player('Alice', g)
     p2 = Player('Bob', g)
     p3 = Player('Chuck', g)
@@ -22,17 +22,24 @@ def test_setup():
     p2.hand = []
     p3.hand = []
     p4.hand = []
-    for _ in xrange(13):
+    for _ in xrange(6):
         p1.hand.append(p1_card)
         p2.hand.append(p2_card)
         p3.hand.append(p3_card)
         p4.hand.append(p4_card)
-    p1.bid(Suits['Hearts'])
-    p2.bid(Suits['Hearts'])
-    assert g.named_suit == Suits['Hearts']
-    p3.bid(Values['A'])
-    p4.bid(Values['A'])
-    assert g.named_high == Values['A']
+    p1.bid(0)
+    p2.bid(1)
+    p3.bid(2)
+    p4.bid(3)
+    assert g.high_bid == (p4, 3)
+    assert g.state == 'name_trump'
+    try:
+        p4.name_trump('fred')
+        assert False, 'Should raise game proc error'
+    except GameProcedureError:
+        assert True
+    p4.name_trump(Suits['Hearts'])
+    return
     assert g.state == 'play_card'
     assert g.next_player == p1
     p1.play_card(p1_card)

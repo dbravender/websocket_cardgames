@@ -1,71 +1,33 @@
 from player import Player
-from deck import Deck, Card, Suit, Value
+from cardgame.deck import FullDeck, Card, Suit, Value
 from collections import defaultdict
 from itertools import cycle
 from functools import wraps
-import traceback
 import hashlib
+from cardgame.game import Game, GameException, message, OutOfTurn, GameProcedureError
 
-class GameException(Exception): pass
-class IncorrectMessageType(GameException): pass
-class GameProcedureError(GameException): pass
-class OutOfTurn(GameException): pass
 class MustFollowSuit(GameException): pass
 
-def message(expected_arguments):
-    def wrap(method):
-        def wrapper(self, player, message):
-            try:
-                if self.next_player and player != self.next_player:
-                    raise OutOfTurn('Out of Turn!')
-                if self.state != method.__name__:
-                    raise GameProcedureError('Not currently in the state: %s' % method.__name__)
-                if not isinstance(message, expected_arguments):
-                    raise GameProcedureError('Expected different arguments')
-                self.response = ''
-                method(self, player, message)
-                self.send(self.response)
-                if self.next_player:
-                    self.send(getattr(self, self.state).__name__, self.next_player)
-            except GameException, e:
-                if hasattr(player, 'socket'):
-                    player.socket.write_message(str(e))
-                    traceback.print_exc()
-                else:
-                    raise e
-        wrapper.__name__ = method.__name__
-        return wrapper
-    return wrap
-
-class Game(object):
-    def __init__(self, number_of_players=4):
-        self.players = []
-        self.number_of_players = number_of_players
-        self.state = 'add_player'
+class CrossPurposesGame(Game):
+    def __init__(self, *args, **kwargs):
         self.next_player = None
         self.named_high = None
         self.named_suit = None
         self.partners = []
         self.tricks_won = {}
-        self.deck = Deck()
+        self.deck = FullDeck()
         self.previous_round = {}
-
-    @message(Player)
-    def add_player(self, _, player):
-        if not isinstance(player, Player):
-            raise IncorrectMessageType('Expected a player')
-        self.players.append(player)
-        self.response = u'%s joined'.encode('utf-8') % player
-        if len(self.players) >= self.number_of_players:
-            self.dealers = cycle(self.players)
-            self.deal()
+        self.player_factory = Player
+        self.player_template = 'crosspurposes/player.html'
+        self.hand_template = 'crosspurposes/hand.html'
+        super(CrossPurposesGame, self).__init__(*args, **kwargs)
 
     def deal(self):
         if self.number_of_players == 2:
             if not len(self.deck.cards):
-                self.deck = Deck()
+                self.deck = FullDeck()
         else:
-            self.deck = Deck()
+            self.deck = FullDeck()
         for player in self.players:
             hand = self.deck.cards[len(self.deck.cards)-13:]
             hand.sort()
@@ -77,7 +39,7 @@ class Game(object):
         self.bids = {}
         self.partners = []
         self.trick_cards = []
-        self.old_trick_cards = []
+        self.last_trick_cards = []
         self.tricks_won = defaultdict(lambda: 0)
         self.state = 'bid'
         self.next_player = self.dealers.next()
@@ -177,12 +139,3 @@ class Game(object):
                 ps[0].score += score
                 ps[1].score += score
         self.deal()
-
-    def send(self, message, recipient=None):
-        if not recipient:
-            for player in self.players:
-                if hasattr(player, 'socket'):
-                    player.socket.write_message(message)
-        else:
-            if hasattr(recipient, 'socket'):
-                recipient.socket.write_message(message)
