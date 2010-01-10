@@ -50,8 +50,8 @@ class Game(object):
     def send(self, message, recipient=None):
         if not recipient:
             for player in self.players:
-                if hasattr(player, 'socket'):
+                if hasattr(player, 'socket') and player.socket:
                     player.socket.write_message(message)
         else:
-            if hasattr(recipient, 'socket'):
+            if hasattr(recipient, 'socket') and recipient.socket:
                 recipient.socket.write_message(message)

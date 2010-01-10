@@ -10,7 +10,7 @@
 {% end %}
 {{ game.name }} - 
 {% for player in game.players %}
-{{ player.name }} 
+<a href="{{ game.url }}/{{ str(id(player)) }}">{{ player.name }}</a>
 {% end %}
 <br/>
 {% end %}
