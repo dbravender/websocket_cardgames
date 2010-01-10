@@ -25,7 +25,7 @@ class Player(object):
         return cid
 
     def receive_hand(self, hand):
-        self.hand = hand
+        self.hand = sorted(hand)
 
     def __repr__(self):
         return self.name.encode('utf-8')
