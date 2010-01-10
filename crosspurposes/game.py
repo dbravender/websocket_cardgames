@@ -10,6 +10,7 @@ class MustFollowSuit(GameException): pass
 
 class CrossPurposesGame(Game):
     def __init__(self, *args, **kwargs):
+        self.name = "Cross Purposes"
         self.next_player = None
         self.named_high = None
         self.named_suit = None

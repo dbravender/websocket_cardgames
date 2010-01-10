@@ -20,11 +20,19 @@ game_factories = {
     'crosspurposes': crosspurposes.game.CrossPurposesGame
 }
 
+games = []
+
+class LobbyHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.write(loader.load('lobby.html').generate(games=games, game_factories=game_factories))
+
 class NewGameHandler(tornado.web.RequestHandler):
     def get(self):
         players = int(self.get_argument('players', 4))
         game_factory = game_factories[self.get_argument('game', 'crosspurposes')]
         game = game_factory(players)
+        game.url = '/' + str(id(game))
+        games.append(game)
         application.add_handlers(r'.*$', [(r'/' + str(id(game)), NewPlayerHandler, {'game': game})])
         self.redirect('/' + str(id(game)))
 
@@ -80,7 +88,8 @@ class PlayerWebSocket(tornado.websocket.WebSocketHandler):
 settings = {'static_path': os.path.join(os.path.realpath(__file__ + '/../'), 'static')}
 
 application = tornado.web.Application(**settings)
-application.add_handlers('.*$', [(r'/', NewGameHandler)])
+application.add_handlers('.*$', [(r'/', LobbyHandler)])
+application.add_handlers('.*$', [(r'/new', NewGameHandler)])
 
 if __name__ == '__main__':
     http_server = tornado.httpserver.HTTPServer(application)

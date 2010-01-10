@@ -18,6 +18,7 @@ from player import Player
 
 class KaiboshGame(Game):
     def __init__(self, *args, **kwargs):
+        self.name = "Kaibosh"
         self.next_player = None
         self.trump = None
         self.tricks_won = {}

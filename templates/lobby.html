@@ -1,0 +1,24 @@
+<html>
+<head>
+<title>Card Game Lobby</title>
+</head>
+<body>
+
+{% for game in games %}
+{% if len(game.players) < game.number_of_players %}
+<a href="{{ game.url }}">join</a>
+{% end %}
+{{ game.name }} - 
+{% for player in game.players %}
+{{ player.name }} 
+{% end %}
+<br/>
+{% end %}
+
+<a href="/new?players=2&game=crosspurposes">New 2 player Cross Purposes game</a><br/>
+<a href="/new?players=4&game=crosspurposes">New 4 player Cross Purposes game</a><br/>
+<a href="/new?players=4&game=kaibosh">New 4 player Kaibosh game</a><br/>
+
+
+</body>
+</html>
