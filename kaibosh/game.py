@@ -126,6 +126,7 @@ class KaiboshGame(Game):
     def end_hand(self):
         partners = [(self.players[0], self.players[2]),
                     (self.players[1], self.players[3])]
+        didnt_make_it = False
         for ps in partners:
             score = self.tricks_won[ps[0]] + self.tricks_won[ps[1]]
             if self.high_bid[0] in ps and self.high_bid[1] == 12:
@@ -135,7 +136,13 @@ class KaiboshGame(Game):
             if self.high_bid[0] in ps:
                 if score < self.high_bid[1]:
                     score = - self.high_bid[1]
-                else:
+                    didnt_make_it = True
+                ps[0].score += score
+                ps[1].score += score
+        if didnt_make_it:
+            for ps in partners:
+                score = self.tricks_won[ps[0]] + self.tricks_won[ps[1]]
+                if self.high_bid[0] not in ps:
                     ps[0].score += score
                     ps[1].score += score
         self.deal()

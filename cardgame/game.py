@@ -25,7 +25,6 @@ def message(expected_arguments):
             except GameException, e:
                 if hasattr(player, 'socket'):
                     player.socket.write_message(str(e))
-                    traceback.print_exc()
                 else:
                     raise e
         wrapper.__name__ = method.__name__
