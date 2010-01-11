@@ -135,8 +135,9 @@ class KaiboshGame(Game):
             if self.high_bid[0] in ps:
                 if score < self.high_bid[1]:
                     score = - self.high_bid[1]
-            ps[0].score += score
-            ps[1].score += score
+                else:
+                    ps[0].score += score
+                    ps[1].score += score
         self.deal()
 
     def card_sorter(self, trump, led_suit):
