@@ -74,7 +74,7 @@ class KaiboshGame(Game):
         self.trump = trump
         for p in self.players:
             p.sort_hand(trump)
-        self.send('%s named %s trump' % (player, trump))
+        self.send(u'%s named %s trump'.encode('utf-8') % (player, trump))
         self.next_player = self.lead_player
         self.start_trick()
 
