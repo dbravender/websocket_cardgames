@@ -72,8 +72,8 @@ class KaiboshGame(Game):
     @message(Suit)
     def name_trump(self, player, trump):
         self.trump = trump
-        for player in self.players:
-            player.sort_hand(trump)
+        for p in self.players:
+            p.sort_hand(trump)
         self.send('%s named %s trump' % (player, trump))
         self.next_player = self.lead_player
         self.start_trick()
