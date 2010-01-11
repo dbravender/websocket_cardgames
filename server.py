@@ -80,6 +80,8 @@ class PlayerWebSocket(tornado.websocket.WebSocketHandler):
     def on_connection_close(self):
         self.player.left = True
         self.player.name = 'Open'
+        if all([player.left for player in self.player.game.players]):
+            games.remove(self.player.game)
 
     def on_message(self, message):
         try:
