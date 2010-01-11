@@ -10,7 +10,11 @@
 {% end %}
 {{ game.name }} - 
 {% for player in game.players %}
+{% if player.left %}
 <a href="{{ game.url }}/{{ str(id(player)) }}">{{ player.name }}</a>
+{% else %}
+{{ player.name }}
+{% end %}
 {% end %}
 <br/>
 {% end %}

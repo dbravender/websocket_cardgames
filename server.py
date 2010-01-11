@@ -71,11 +71,16 @@ class PlayerWebSocket(tornado.websocket.WebSocketHandler):
     def __init__(self, *args, **kwargs):
         self.player = kwargs.pop('player')
         self.player.socket = self
+        self.player.left = False
         super(PlayerWebSocket, self).__init__(*args, **kwargs)
 
     def open(self):
         self.receive_message(self.on_message)
-    
+
+    def on_connection_close(self):
+        self.player.left = True
+        self.player.name = 'Open'
+
     def on_message(self, message):
         try:
             params = message.split(' ')
