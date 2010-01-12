@@ -1,7 +1,5 @@
-from functools import wraps
 from itertools import cycle
 from player import Player
-import traceback
 
 class GameException(Exception): pass
 class GameProcedureError(GameException): pass

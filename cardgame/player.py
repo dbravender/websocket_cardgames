@@ -1,5 +1,3 @@
-from deck import Values
-
 class Player(object):
     def __init__(self, name, game):
         self.hand = []
@@ -25,7 +23,23 @@ class Player(object):
         return cid
 
     def receive_hand(self, hand):
-        self.hand = sorted(hand)
+        self.hand = hand
+        self.sort_hand()
+
+    def sort_hand(self):
+        self.hand.sort(self.hand_sorter())
+
+    def hand_sorter(self):
+        def compare(a, b):
+            if a.suit == b.suit:
+                if a.value > b.value:
+                    return -1
+                else:
+                    return 1
+            if a.suit > b.suit:
+                return -1
+            return 1
+        return compare
 
     def __repr__(self):
         return self.name.encode('utf-8')

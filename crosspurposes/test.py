@@ -46,7 +46,7 @@ def test_setup():
     p4.play_card(p4_card)
     assert g.tricks_won[p1] == 1
     assert g.next_player == p1
-    for i in xrange(12):
+    for i in xrange(12): #@UnusedVariable
         p1.play_card(p1_card)
         p2.play_card(p2_card)
         p3.play_card(p3_card)

@@ -14,8 +14,8 @@ def test_setup():
     g.add_player(p3, p3)
     g.add_player(p4, p4)
     assert g.state == 'bid'
-    p1_card = Card(Values['A'], Suits['Hearts'])
-    p2_card = Card(Values['K'], Suits['Hearts'])
+    p1_card = Card(Values['J'], Suits['Hearts'])
+    p2_card = Card(Values['J'], Suits['Diamonds'])
     p3_card = Card(Values['Q'], Suits['Clubs'])
     p4_card = Card(Values['10'], Suits['Spades'])
     p1.hand = []
@@ -29,6 +29,11 @@ def test_setup():
         p4.hand.append(p4_card)
     p1.bid(0)
     p2.bid(1)
+    try:
+        p3.bid(1)
+        assert False, 'Should complain about the bid being too low'
+    except:
+        assert True
     p3.bid(2)
     p4.bid(3)
     assert g.high_bid == (p4, 3)
@@ -39,7 +44,6 @@ def test_setup():
     except GameProcedureError:
         assert True
     p4.name_trump(Suits['Hearts'])
-    return
     assert g.state == 'play_card'
     assert g.next_player == p1
     p1.play_card(p1_card)
@@ -51,15 +55,15 @@ def test_setup():
     p2.play_card(p2_card)
     p3.play_card(p3_card)
     p4.play_card(p4_card)
-    assert g.tricks_won[p1] == 1
-    assert g.next_player == p1
-    for i in xrange(12):
-        p1.play_card(p1_card)
-        p2.play_card(p2_card)
-        p3.play_card(p3_card)
-        p4.play_card(p4_card)
-    assert g.state == 'bid'
-    assert p1.score == 14
-    assert p2.score == 14
-    assert p3.score == 1
-    assert p4.score == 1
+    #assert g.tricks_won[p1] == 1
+    #assert g.next_player == p1
+    #for i in xrange(12):
+    #    p1.play_card(p1_card)
+    #    p2.play_card(p2_card)
+    #    p3.play_card(p3_card)
+    #    p4.play_card(p4_card)
+    #assert g.state == 'bid'
+    #assert p1.score == 14
+    #assert p2.score == 14
+    #assert p3.score == 1
+    #assert p4.score == 1

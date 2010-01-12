@@ -12,19 +12,21 @@ class Player(player.Player):
     def name_trump(self, suit, message=None):
         self.game.name_trump(self, suit)
 
-    def sort_hand(self, trump):
+    def hand_sorter(self):
+        if not self.game.trump:
+            return super(Player, self).hand_sorter()
         def sort(a, b):
-            if a.suit == trump and a.value == Values['J']:
+            if a.suit == self.game.trump and a.value == Values['J']:
                 return -1
-            if b.suit == trump and b.value == Values['J']:
+            if b.suit == self.game.trump and b.value == Values['J']:
                 return 1
-            if a.suit == SameColor[trump] and a.value == Values['J']:
+            if a.suit == SameColor[self.game.trump] and a.value == Values['J']:
                 return -1
-            if b.suit == SameColor[trump] and b.value == Values['J']:
+            if b.suit == SameColor[self.game.trump] and b.value == Values['J']:
                 return 1
-            if a.suit == trump and b.suit != trump:
+            if a.suit == self.game.trump and b.suit != self.game.trump:
                 return -1
-            if a.suit != trump and b.suit == trump:
+            if a.suit != self.game.trump and b.suit == self.game.trump:
                 return 1
             if a.suit == b.suit:
                 if a.value > b.value:
@@ -36,4 +38,4 @@ class Player(player.Player):
             if a.suit < b.suit:
                 return 1
             return 0
-        self.hand.sort(sort)
+        return sort

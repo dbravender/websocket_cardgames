@@ -42,30 +42,6 @@ class Card(object):
         self.value = value
         self.suit = suit
 
-    @classmethod
-    def sort(kls, trump, led_suit, highest):
-        def sorter(a, b):
-            if a.suit == b.suit:
-                if a.value.value > highest.value and b.value.value <= highest.value:
-                    return 1
-                if b.value.value > highest.value and a.value.value <= highest.value:
-                    return -1
-                if a.value.value > b.value.value:
-                    return -1
-                else:
-                    return 1
-            else:
-                if a.suit == trump:
-                    return -1
-                if b.suit == trump:
-                    return 1
-                if a.suit == led_suit:
-                    return -1
-                if b.suit == led_suit:
-                    return 1
-                return 0
-        return sorter
-
     def image(self):
         return u'<img src="/static/cards/%s%s.png"/>'.encode('utf-8') % (self.value.name, self.suit.name)
 

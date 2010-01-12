@@ -4,9 +4,6 @@ import tornado.websocket
 import tornado.httpserver
 import tornado.ioloop
 import tornado.template
-import hashlib
-import random
-import re
 import os
 import crosspurposes.game
 import kaibosh.game

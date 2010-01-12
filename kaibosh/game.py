@@ -1,10 +1,6 @@
-from cardgame.deck import KaiboshDeck, Card, Suit, Suits, Value, Values
+from cardgame.deck import KaiboshDeck, Card, Suit, Suits, Values
 from collections import defaultdict
-from itertools import cycle
-from functools import wraps
-import traceback
-import hashlib
-from cardgame.game import Game, GameException, GameProcedureError, message, OutOfTurn
+from cardgame.game import Game, GameException, GameProcedureError, message, OutOfTurn #@UnusedImport
 
 class MustFollowSuit(GameException): pass
 
@@ -38,7 +34,6 @@ class KaiboshGame(Game):
                          self.players[3]: self.players[1]}
         for player in self.players:
             hand = self.deck.cards[len(self.deck.cards)-6:]
-            hand.sort()
             self.deck.cards = self.deck.cards[:-6]
             player.receive_hand(hand)
         self.trump = None
@@ -73,7 +68,7 @@ class KaiboshGame(Game):
     def name_trump(self, player, trump):
         self.trump = trump
         for p in self.players:
-            p.sort_hand(trump)
+            p.sort_hand()
         self.send(u'%s named %s trump'.encode('utf-8') % (player, trump))
         self.next_player = self.lead_player
         self.start_trick()
@@ -111,8 +106,7 @@ class KaiboshGame(Game):
             self.next_player = self.players[(self.players.index(self.next_player) + 1) % len(self.players)]
         if len(self.trick_cards) >= self.number_of_players or \
            (self.high_bid[1] == 12 and len(self.trick_cards) >= 3):
-            self.trick_cards.sort(self.trick_sorter)
-            winner = self.trick_cards[0].player
+            winner = sorted(self.trick_cards, self.trick_sorter)[0].player
             self.tricks_won[winner] += 1
             self.next_player = winner
             self.response = u'Trick won by %s'.encode('utf-8') % winner

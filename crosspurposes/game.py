@@ -1,10 +1,7 @@
 from player import Player
 from cardgame.deck import FullDeck, Card, Suit, Value
 from collections import defaultdict
-from itertools import cycle
-from functools import wraps
-import hashlib
-from cardgame.game import Game, GameException, message, OutOfTurn, GameProcedureError
+from cardgame.game import Game, GameException, message, OutOfTurn, GameProcedureError #@UnusedImport
 
 class MustFollowSuit(GameException): pass
 
@@ -66,7 +63,6 @@ class CrossPurposesGame(Game):
             if self.get_bid(bid):
                 raise GameProcedureError('%s has already been named'.encode('utf-8') % self.get_bid(bid))
             if self.number_of_players == 2:
-                named = bid
                 self.set_bid(bid)
                 self.response = u'%s names %s'.encode('utf-8') % (player, bid)
             else:
@@ -81,13 +77,13 @@ class CrossPurposesGame(Game):
             self.bids[bid] = [player]
             self.response = u'%s bids %s'.encode('utf-8') % (player, bid)
         self.next_player = self.dealers.next()
+        for player in self.players:
+                player.sort_hand()
         if len(self.partners):
             # Bid goes to the next player who hasn't found a partner yet
             while self.next_player in self.partners[0]:
                 self.next_player = self.dealers.next()
         if self.named_suit and self.named_high:
-            for player in self.players:
-                player.sort_hand(self.named_high, self.named_suit)
             self.next_player = self.lead_player
             self.start_trick()
 
@@ -100,7 +96,7 @@ class CrossPurposesGame(Game):
         if len(self.trick_cards) == 0:
             # The lead card gives us enough info to create the sorter to
             # determine the winning trick
-            self.trick_sorter = Card.sort(trump   =self.named_suit,
+            self.trick_sorter = self.sort(trump   =self.named_suit,
                                           led_suit=card.suit,
                                           highest =self.named_high)
             self.led_suit = card.suit
@@ -140,3 +136,26 @@ class CrossPurposesGame(Game):
                 ps[0].score += score
                 ps[1].score += score
         self.deal()
+
+    def sort(self, trump, led_suit, highest):
+        def sorter(a, b):
+            if a.suit == b.suit:
+                if a.value.value > highest.value and b.value.value <= highest.value:
+                    return 1
+                if b.value.value > highest.value and a.value.value <= highest.value:
+                    return -1
+                if a.value.value > b.value.value:
+                    return -1
+                else:
+                    return 1
+            else:
+                if a.suit == trump:
+                    return -1
+                if b.suit == trump:
+                    return 1
+                if a.suit == led_suit:
+                    return -1
+                if b.suit == led_suit:
+                    return 1
+                return 0
+        return sorter
