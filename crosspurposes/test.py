@@ -1,4 +1,4 @@
-from game import CrossPurposesGame, OutOfTurn
+from game import CrossPurposesGame, OutOfTurn, GameProcedureError
 from cardgame.deck import Suits, Values, Card
 from player import Player
 
@@ -28,8 +28,17 @@ def test_setup():
         p3.hand.append(p3_card)
         p4.hand.append(p4_card)
     p1.bid(Suits['Hearts'])
+    p2.bid(Suits['Diamonds'])
+    p3.bid(Suits['Clubs'])
+    p4.bid(Suits['Spades'])
+    p1.bid(Suits['Hearts'])
     p2.bid(Suits['Hearts'])
     assert g.named_suit == Suits['Hearts']
+    try:
+        p3.bid(Suits['Hearts'])
+        assert False, 'GameProcedureError should be raised'
+    except GameProcedureError:
+        assert True
     p3.bid(Values['A'])
     p4.bid(Values['A'])
     assert g.named_high == Values['A']

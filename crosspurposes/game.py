@@ -57,7 +57,11 @@ class CrossPurposesGame(Game):
 
     @message((Value, Suit))
     def bid(self, player, bid):
-        if self.number_of_players == 2 or self.bids.get(bid, None):
+        # Remove a player's previous bid
+        for _, players in self.bids.iteritems():
+            if player in players:
+                players.remove(player)
+        if self.number_of_players == 2 or len(self.bids.get(bid, [])):
             # Someone else already bid this value
             if self.get_bid(bid):
                 raise GameProcedureError('%s has already been named'.encode('utf-8') % self.get_bid(bid))
