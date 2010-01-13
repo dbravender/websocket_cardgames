@@ -5,6 +5,7 @@ class Player(object):
         self.name = name
         self.game = game
         self.callbacks = {}
+        self.left = False
 
     def rename(self, message):
         old_name = self.name

@@ -1,12 +1,44 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="/static/soundmanager2/soundmanager2.js"></script>
 <script type="text/javascript" src="/static/swfobject.js"></script>
 <script type="text/javascript" src="/static/FABridge.js"></script>
 <script type="text/javascript" src="/static/web_socket.js"></script>
 <script src="/static/jquery.js"></script>
 <script>
 WebSocket.__swfLocation = "/static/WebSocketMain.swf";
+soundManager.url = '/static/soundmanager2/';
+
+soundManager.debugMode = false;
+soundManager.consoleOnly = true;
+
+soundManager.onready(function(status) {
+    if (!status) {
+        return false;
+    }
+
+    soundManager.createSound({
+        id: 'play',
+        url: '/static/sounds/play.mp3'
+    });
+
+    soundManager.createSound({
+        id: 'lost',
+        url: '/static/sounds/lost.mp3'
+    });
+
+    soundManager.createSound({
+        id: 'your_turn',
+        url: '/static/sounds/your_turn.mp3'
+    });
+
+    soundManager.createSound({
+        id: 'message',
+        url: '/static/sounds/message.mp3'
+    });
+
+});
 
 function update_hand() {
     $('#hand').load('http://' + location.hostname + ':' + location.port + location.pathname + '/hand');
@@ -17,7 +49,13 @@ $(document).ready(function() {
     
     ws.onmessage = function(msg) {
         update_hand();
-        $('#messages').prepend(msg.data + '<br/>');
+        if (msg.data.indexOf('bid') != -1 ||
+            msg.data.indexOf('play_card') != -1) {
+            soundManager.play('your_turn');
+        } else {
+            soundManager.play('message');
+            $('#messages').prepend(msg.data + '<br/>');
+        }
     }
 
     update_hand();

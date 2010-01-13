@@ -36,7 +36,7 @@ Trump: {{ player.game.trump }}
 <tr><td>Name</td><td>Tricks</td><td>Total Score</td></tr>
 {% for otherplayer in player.game.players %}
 <tr>
-  <td>{{ otherplayer.name }}</td>
+  <td>{{ player.game.next_player == otherplayer and '&raquo;' or '' }}{{ otherplayer.name }}</td>
   <td>{{ player.game.tricks_won.get(otherplayer, 0) }}</td>
   <td>{{ otherplayer.score }}</td>
 </tr>
