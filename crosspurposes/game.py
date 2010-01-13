@@ -57,13 +57,14 @@ class CrossPurposesGame(Game):
 
     @message((Value, Suit))
     def bid(self, player, bid):
-        # Remove a player's previous bid
-        for _, players in self.bids.iteritems():
-            if player in players:
-                players.remove(player)
+        if self.number_of_players == 4:
+            # Remove a player's previous bid
+            for _, players in self.bids.iteritems():
+                if player in players:
+                    players.remove(player)
         if self.number_of_players == 2 or len(self.bids.get(bid, [])):
-            # Someone else already bid this value
             if self.get_bid(bid):
+                # Someone else already bid this value
                 raise GameProcedureError('%s has already been named'.encode('utf-8') % self.get_bid(bid))
             if self.number_of_players == 2:
                 self.set_bid(bid)
@@ -86,7 +87,7 @@ class CrossPurposesGame(Game):
         if len(self.partners):
             # Bid goes to the next player who hasn't found a partner yet
             while self.next_player in self.partners[0]:
-                self.next_player = self.dealers.next()
+                self.next_player = self.players[(self.players.index(self.next_player) + 1) % len(self.players)]
         if self.named_suit and self.named_high:
             self.next_player = self.lead_player
             self.start_trick()
