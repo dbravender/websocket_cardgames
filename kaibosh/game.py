@@ -22,6 +22,7 @@ class KaiboshGame(Game):
         self.number_of_players = 4
         self.high_bid = (None, 0)
         self.player_factory = Player
+        self.last_trick_cards = []
         self.player_template = 'kaibosh/player.html'
         self.hand_template = 'kaibosh/hand.html'
         super(KaiboshGame, self).__init__(*args, **kwargs)
@@ -40,17 +41,16 @@ class KaiboshGame(Game):
         self.tricks_played = 0
         self.bids = {}
         self.trick_cards = []
-        self.old_trick_cards = []
         self.tricks_won = defaultdict(lambda: 0)
         self.state = 'bid'
         self.next_player = self.dealers.next()
         self.lead_player = self.next_player
         self.high_bid = (None, 0)
         self.send('New hand')
-        self.last_trick_cards = []
 
     @message(int)
     def bid(self, player, bid):
+        self.last_trick_cards = []
         if bid > 0 and bid <= self.high_bid[1]:
             raise GameProcedureError('Bid too low. Must be above %s' % self.high_bid[1])
         if bid != 0:

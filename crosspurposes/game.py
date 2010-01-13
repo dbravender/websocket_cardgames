@@ -14,6 +14,7 @@ class CrossPurposesGame(Game):
         self.partners = []
         self.tricks_won = {}
         self.deck = FullDeck()
+        self.last_trick_cards = []
         self.previous_round = {}
         self.player_factory = Player
         self.player_template = 'crosspurposes/player.html'
@@ -36,8 +37,6 @@ class CrossPurposesGame(Game):
         self.tricks_played = 0
         self.bids = {}
         self.partners = []
-        self.trick_cards = []
-        self.last_trick_cards = []
         self.tricks_won = defaultdict(lambda: 0)
         self.state = 'bid'
         self.next_player = self.dealers.next()
@@ -79,6 +78,7 @@ class CrossPurposesGame(Game):
         self.next_player = self.dealers.next()
         for player in self.players:
                 player.sort_hand()
+        self.last_trick_cards = []
         if len(self.partners):
             # Bid goes to the next player who hasn't found a partner yet
             while self.next_player in self.partners[0]:

@@ -1,69 +1,125 @@
-from game import KaiboshGame, OutOfTurn, GameProcedureError
+from game import KaiboshGame, OutOfTurn, MustFollowSuit
 from cardgame.deck import Suits, Values, Card
 from player import Player
 
-def test_setup():
-    g = KaiboshGame()
-    p1 = Player('Alice', g)
-    p2 = Player('Bob', g)
-    p3 = Player('Chuck', g)
-    p4 = Player('Dan', g)
-    assert g.state == 'add_player'
-    g.add_player(p1, p1)
-    g.add_player(p2, p2)
-    g.add_player(p3, p3)
-    g.add_player(p4, p4)
-    assert g.state == 'bid'
-    p1_card = Card(Values['J'], Suits['Hearts'])
-    p2_card = Card(Values['J'], Suits['Diamonds'])
-    p3_card = Card(Values['Q'], Suits['Clubs'])
-    p4_card = Card(Values['10'], Suits['Spades'])
-    p1.hand = []
-    p2.hand = []
-    p3.hand = []
-    p4.hand = []
-    for _ in xrange(6):
-        p1.hand.append(p1_card)
-        p2.hand.append(p2_card)
-        p3.hand.append(p3_card)
-        p4.hand.append(p4_card)
-    p1.bid(0)
-    p2.bid(1)
-    try:
-        p3.bid(1)
-        assert False, 'Should complain about the bid being too low'
-    except:
-        assert True
-    p3.bid(2)
-    p4.bid(3)
-    assert g.high_bid == (p4, 3)
-    assert g.state == 'name_trump'
-    try:
-        p4.name_trump('fred')
-        assert False, 'Should raise game proc error'
-    except GameProcedureError:
-        assert True
-    p4.name_trump(Suits['Hearts'])
-    assert g.state == 'play_card'
-    assert g.next_player == p1
-    p1.play_card(p1_card)
-    try:
-        p1.play_card(p1_card)
-        assert False, 'Out of turn not raised'
-    except OutOfTurn:
-        assert True
-    p2.play_card(p2_card)
-    p3.play_card(p3_card)
-    p4.play_card(p4_card)
-    #assert g.tricks_won[p1] == 1
-    #assert g.next_player == p1
-    #for i in xrange(12):
-    #    p1.play_card(p1_card)
-    #    p2.play_card(p2_card)
-    #    p3.play_card(p3_card)
-    #    p4.play_card(p4_card)
-    #assert g.state == 'bid'
-    #assert p1.score == 14
-    #assert p2.score == 14
-    #assert p3.score == 1
-    #assert p4.score == 1
+class TestKaibosh(object):
+    def test_sorter(self):
+        g = KaiboshGame()
+        sorter = g.card_sorter(trump=Suits['Diamonds'], led_suit=Suits['Clubs'])
+        jack_of_diamonds = Card(Values['J'], Suits['Diamonds'])
+        jack_of_hearts = Card(Values['J'], Suits['Hearts'])
+        ace_of_clubs = Card(Values['A'], Suits['Clubs'])
+        king_of_clubs = Card(Values['K'], Suits['Clubs'])
+        ace_of_hearts = Card(Values['A'], Suits['Hearts'])
+        assert sorted([jack_of_hearts,
+                       ace_of_clubs], sorter)[0] == jack_of_hearts
+        assert sorted([jack_of_hearts,
+                       jack_of_diamonds], sorter)[0] == jack_of_diamonds
+        assert sorted([ace_of_clubs,
+                       ace_of_hearts], sorter)[0] == ace_of_clubs
+        assert sorted([ace_of_clubs,
+                       king_of_clubs], sorter)[0] == ace_of_clubs
+
+    def test_setup(self):
+        g = KaiboshGame()
+        p1 = Player('Alice', g)
+        p2 = Player('Bob', g)
+        p3 = Player('Chuck', g)
+        p4 = Player('Dan', g)
+        self.players = [p1, p2, p3, p4]
+        assert g.state == 'add_player'
+        g.add_player(p1, p1)
+        g.add_player(p2, p2)
+        g.add_player(p3, p3)
+        g.add_player(p4, p4)
+        assert g.state == 'bid'
+        jack_of_hearts = Card(Values['J'], Suits['Hearts'])
+        jack_of_diamonds = Card(Values['J'], Suits['Diamonds'])
+        queen_of_clubs = Card(Values['Q'], Suits['Clubs'])
+        ten_of_spades = Card(Values['10'], Suits['Spades'])
+        p1.hand = []
+        p2.hand = []
+        p3.hand = []
+        p4.hand = []
+        for _ in xrange(6):
+            p1.hand.append(jack_of_hearts)
+            p2.hand.append(jack_of_diamonds)
+            p3.hand.append(queen_of_clubs)
+            p4.hand.append(ten_of_spades)
+        self.render_template()
+        p1.bid(0)
+        p2.bid(1)
+        try:
+            p3.bid(1)
+            assert False, 'Should complain about the bid being too low'
+        except:
+            assert True
+        p3.bid(4)
+        p4.bid(0)
+        assert g.high_bid == (p3, 4)
+        assert g.state == 'name_trump'
+        p3.name_trump(Suits['Hearts'])
+        assert g.state == 'play_card'
+        assert g.next_player == p1
+        p1.play_card(jack_of_hearts)
+        self.render_template()
+        try:
+            p1.play_card(jack_of_hearts)
+            assert False, 'Out of turn not raised'
+        except OutOfTurn:
+            assert True
+        p2.hand.append(queen_of_clubs)
+        try:
+            p2.play_card(queen_of_clubs)
+            assert False, 'Must follow suit should raise'
+        except MustFollowSuit:
+            assert True
+        p2.hand.remove(queen_of_clubs)
+        p2.play_card(jack_of_diamonds)
+        p3.play_card(queen_of_clubs)
+        p4.play_card(ten_of_spades)
+        assert g.tricks_won[p1] == 1
+        assert g.next_player == p1
+        for i in xrange(5): #@UnusedVariable
+            p1.play_card(jack_of_hearts)
+            p2.play_card(jack_of_diamonds)
+            p3.play_card(queen_of_clubs)
+            p4.play_card(ten_of_spades)
+            self.render_template()
+        assert g.state == 'bid'
+        assert p1.score == 6
+        assert p2.score == 0
+        assert p3.score == 6
+        assert p4.score == 0
+        p1.hand = []
+        p2.hand = []
+        p3.hand = []
+        p4.hand = []
+        for _ in xrange(6):
+            p1.hand.append(jack_of_hearts)
+            p2.hand.append(queen_of_clubs)
+            p3.hand.append(jack_of_diamonds)
+            p4.hand.append(ten_of_spades)
+        p2.bid(3)
+        p3.bid(12)
+        assert g.state == 'name_trump'
+        assert g.next_player == p3
+        p3.name_trump(Suits['Diamonds'])
+        for i in xrange(6): #@UnusedVariable
+            p3.play_card(jack_of_diamonds)
+            p4.play_card(ten_of_spades)
+            p2.play_card(queen_of_clubs)
+            self.render_template()
+        assert p3.score == 18
+        assert p1.score == 18
+        assert p2.score == 0
+        assert p4.score == 0
+
+    def render_template(self):
+        import os, sys
+        sys.path.append('tornado')
+        from tornado import template
+        loader = template.Loader(os.path.join(os.path.join(os.path.realpath(__file__) + '/../../'), 'templates')) 
+        for player in self.players:
+            loader.load(player.game.hand_template).generate(player=player)
+            loader.load(player.game.player_template).generate(player=player)

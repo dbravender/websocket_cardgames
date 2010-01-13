@@ -37,5 +37,4 @@ class Player(player.Player):
                 return -1
             if a.suit < b.suit:
                 return 1
-            return 0
         return sort
