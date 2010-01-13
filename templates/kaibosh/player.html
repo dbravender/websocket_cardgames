@@ -13,6 +13,8 @@ soundManager.url = '/static/soundmanager2/';
 soundManager.debugMode = false;
 soundManager.consoleOnly = true;
 
+var soundEnabled = true;
+
 soundManager.onready(function(status) {
     if (!status) {
         return false;
@@ -52,9 +54,9 @@ $(document).ready(function() {
         if (msg.data.indexOf('bid') != -1 ||
             msg.data.indexOf('name_trump') != -1 ||
             msg.data.indexOf('play_card') != -1) {
-            soundManager.play('your_turn');
+            if (soundEnabled) soundManager.play('your_turn');
         } else {
-            soundManager.play('message');
+            if (soundEnabled) soundManager.play('message');
             $('#messages').prepend(msg.data + '<br/>');
         }
     }
@@ -69,7 +71,8 @@ $(document).ready(function() {
 
 <table width="100%" height="100%">
 <tr>
-<td width="200px">
+<td width="200px" valign="top">
+Sounds? <input type="checkbox" id="sound-enabled" onchange="soundEnabled = $('#sound-enabled').val();" checked>
 <div id="messages" style="width: 100%; height: 100%; overflow: scroll">
 </div>
 </td>
