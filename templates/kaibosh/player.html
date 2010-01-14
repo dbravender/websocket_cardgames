@@ -26,8 +26,8 @@ soundManager.onready(function(status) {
     });
 
     soundManager.createSound({
-        id: 'lost',
-        url: '/static/sounds/lost.mp3'
+        id: 'error',
+        url: '/static/sounds/error.mp3'
     });
 
     soundManager.createSound({
@@ -51,10 +51,13 @@ $(document).ready(function() {
     
     ws.onmessage = function(msg) {
         update_hand();
-        if (msg.data.indexOf('bid') != -1 ||
-            msg.data.indexOf('name_trump') != -1 ||
-            msg.data.indexOf('play_card') != -1) {
+        if (msg.data == 'bid' ||
+            msg.data == 'name_trump' ||
+            msg.data == 'play_card') {
             if (soundEnabled) soundManager.play('your_turn');
+        } else if (msg.data.indexOf('!') != -1) {
+            if (soundEnabled) soundManager.play('error');
+            $('#messages').prepend(msg.data + '<br/>');
         } else {
             if (soundEnabled) soundManager.play('message');
             $('#messages').prepend(msg.data + '<br/>');

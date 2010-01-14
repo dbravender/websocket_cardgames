@@ -12,7 +12,7 @@ def message(expected_arguments):
                 if self.next_player and player != self.next_player:
                     raise OutOfTurn('Out of Turn!')
                 if self.state != method.__name__:
-                    raise GameProcedureError('Not currently in the state: %s' % method.__name__)
+                    raise GameProcedureError('Not currently in the state: %s!' % method.__name__)
                 if not isinstance(message, expected_arguments):
                     raise GameProcedureError('Expected different %s but got %s' % (str(type(expected_arguments)), str(type(message))))
                 self.response = ''

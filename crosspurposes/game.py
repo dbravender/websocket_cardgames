@@ -65,7 +65,7 @@ class CrossPurposesGame(Game):
         if self.number_of_players == 2 or len(self.bids.get(bid, [])):
             if self.get_bid(bid):
                 # Someone else already bid this value
-                raise GameProcedureError('%s has already been named'.encode('utf-8') % self.get_bid(bid))
+                raise GameProcedureError('%s has already been named!'.encode('utf-8') % self.get_bid(bid))
             if self.number_of_players == 2:
                 self.set_bid(bid)
                 self.response = u'%s names %s'.encode('utf-8') % (player, bid)
