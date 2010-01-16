@@ -8,6 +8,7 @@ class MustFollowSuit(GameException): pass
 class CrossPurposesGame(Game):
     def __init__(self, *args, **kwargs):
         self.name = "Cross Purposes"
+        self.must_bid = []
         self.next_player = None
         self.named_high = None
         self.named_suit = None
@@ -20,11 +21,22 @@ class CrossPurposesGame(Game):
         self.player_template = 'crosspurposes/player.html'
         self.hand_template = 'crosspurposes/hand.html'
         super(CrossPurposesGame, self).__init__(*args, **kwargs)
+        if self.number_of_players == 2:
+            self.dealers = self.two_player_cycle()
+
+    def two_player_cycle(self):
+        yield self.players[0]
+        while True:
+            yield self.players[1]
+            yield self.players[1]
+            yield self.players[0]
+            yield self.players[0]
 
     def deal(self):
         if self.number_of_players == 2:
             if not len(self.deck.cards):
                 self.deck = FullDeck()
+                self.must_bid = []
         else:
             self.deck = FullDeck()
         for player in self.players:
@@ -52,11 +64,21 @@ class CrossPurposesGame(Game):
     def set_bid(self, bid):
         if isinstance(bid, Suit):
             self.named_suit = bid
+            self.must_bid = [Value, Suit]
         else:
             self.named_high = bid
+            self.must_bid = [Suit, Value]
 
     @message((Value, Suit))
     def bid(self, player, bid):
+        if self.number_of_players == 2 and len(self.must_bid):
+            if not isinstance(bid, self.must_bid[0]):
+                if self.must_bid[0] == Value:
+                    raise GameProcedureError(u'You must name the high card!')
+                else:
+                    raise GameProcedureError(u'You must name a suit!')
+            else:
+                self.must_bid = self.must_bid[1:]
         if self.number_of_players == 4:
             # Remove a player's previous bid
             for _, players in self.bids.iteritems():
@@ -65,7 +87,7 @@ class CrossPurposesGame(Game):
         if self.number_of_players == 2 or len(self.bids.get(bid, [])):
             if self.get_bid(bid):
                 # Someone else already bid this value
-                raise GameProcedureError('%s has already been named!'.encode('utf-8') % self.get_bid(bid))
+                raise GameProcedureError(u'%s has already been named!'.encode('utf-8') % self.get_bid(bid))
             if self.number_of_players == 2:
                 self.set_bid(bid)
                 self.response = u'%s names %s'.encode('utf-8') % (player, bid)
@@ -80,7 +102,7 @@ class CrossPurposesGame(Game):
         else:
             self.bids[bid] = [player]
             self.response = u'%s bids %s'.encode('utf-8') % (player, bid)
-        self.next_player = self.dealers.next()
+        self.next_player = self.players[(self.players.index(self.next_player) + 1) % len(self.players)]
         for player in self.players:
                 player.sort_hand()
         self.last_trick_cards = []
