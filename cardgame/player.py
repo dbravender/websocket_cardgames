@@ -12,15 +12,16 @@ class Player(object):
         self.name = message
         self.game.send(u'%s now goes by %s'.encode('utf-8') % (old_name, self.name))
 
-    def forget(self):
-        self.callbacks = {}
-
-    def remember(self, callback, *args, **kwargs):
+    def remember(self, callback, *args):
         def doit(message):
-            kwargs['message'] = message
+            kwargs = {'message': message}
             callback(*args, **kwargs)
         cid = str(id(doit))
+        previous_callback = self.callbacks.get((callback, tuple(args)), None)
+        if previous_callback:
+            del self.callbacks[str(id(previous_callback))]
         self.callbacks[cid] = doit
+        self.callbacks[(callback, tuple(args))] = doit
         return cid
 
     def receive_hand(self, hand):

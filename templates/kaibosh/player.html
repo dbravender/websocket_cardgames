@@ -75,7 +75,10 @@ $(document).ready(function() {
 <table width="100%" height="100%">
 <tr>
 <td width="200px" valign="top">
-Sounds? <input type="checkbox" id="sound-enabled" onchange="soundEnabled = $('#sound-enabled').val();" checked>
+<div>
+<button onclick="var name = prompt('Name?', this.textContent); this.textContent = name; ws.send('{{ player.remember(player.rename) }} ' + name)"/>{{ player.name }}</button>
+</div>
+Sounds? <input type="checkbox" id="sound-enabled" onchange="soundEnabled = !soundEnabled" checked>
 <div id="messages" style="width: 100%; height: 100%; overflow: scroll">
 </div>
 </td>

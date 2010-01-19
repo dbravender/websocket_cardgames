@@ -1,12 +1,10 @@
+<script>
 {% if player.game.next_player == player %}
-<h3>YOUR TURN</h3>
+$('#hand').css({'background': 'red'})
+{% else %}
+$('#hand').css({'background': 'white'})
 {% end %}
-
-{{ player.forget() or '' }}
-
-<div>
-<input id="name" value="{{ player.name }}" onchange="ws.send('{{ player.remember(player.rename) }} ' + $('#name').val())"/>
-</div>
+</script>
 
 {% if player.game.state == 'bid' %}
 
