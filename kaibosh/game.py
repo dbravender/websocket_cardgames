@@ -10,6 +10,15 @@ SameColor = {
     Suits['Clubs']   : Suits['Spades'],
     Suits['Spades']  : Suits['Clubs']}
 
+bid_names = {0:  'pass',
+             1:  '1',
+             2:  '2',
+             3:  '3',
+             4:  '4',
+             5:  '5',
+             6:  '6',
+             12: 'Kaibosh'}
+
 from player import Player
 
 class KaiboshGame(Game):
@@ -51,12 +60,11 @@ class KaiboshGame(Game):
 
     @message(int)
     def bid(self, player, bid):
-        self.last_trick_cards = []
         if bid > 0 and bid <= self.high_bid[1]:
             raise GameProcedureError('Bid too low. Must be above %s' % self.high_bid[1])
         if bid != 0:
             self.high_bid = (player, bid)
-        self.response = u'%s bids %s'.encode('utf-8') % (player, bid)
+        self.response = u'%s bids %s'.encode('utf-8') % (player, bid_names[bid])
         self.next_player = self.players[(self.players.index(self.next_player) + 1) % len(self.players)]
         if self.next_player == self.lead_player or bid == 12:
             # the bid went all the way around or someone kaiboshed!
@@ -64,7 +72,7 @@ class KaiboshGame(Game):
                                   'bid'    : self.high_bid[1],
                                   'made_it': None,
                                   'trump'  : None,
-                                  'scores' : [None, None]
+                                  'scores' : ['-', '-']
                                  })
             self.state = 'name_trump'
             if bid == 12:
@@ -118,10 +126,10 @@ class KaiboshGame(Game):
             self.next_player = winner
             self.response = u'Trick won by %s'.encode('utf-8') % winner
             self.tricks_played += 1
+            self.last_trick_cards = self.trick_cards[:]
             if self.tricks_played >= 6:
                 self.end_hand()
             else:
-                self.last_trick_cards = self.trick_cards[:]
                 self.start_trick()
 
     def end_hand(self):

@@ -58,11 +58,11 @@ class TestKaibosh(object):
             assert True
         p3.bid(4)
         p4.bid(0)
-        assert g.score == [{'bidder': p3, 'bid': 4, 'trump': None, 'made_it': None, 'scores': [None, None]}]
+        assert g.score == [{'bidder': p3, 'bid': 4, 'trump': None, 'made_it': None, 'scores': ['-', '-']}]
         assert g.high_bid == (p3, 4)
         assert g.state == 'name_trump'
         p3.name_trump(Suits['Hearts'])
-        assert g.score == [{'bidder': p3, 'bid': 4, 'trump': Suits['Hearts'], 'made_it': None, 'scores': [None, None]}]
+        assert g.score == [{'bidder': p3, 'bid': 4, 'trump': Suits['Hearts'], 'made_it': None, 'scores': ['-', '-']}]
         assert g.state == 'play_card'
         assert g.next_player == p1
         p1.play_card(jack_of_hearts)
