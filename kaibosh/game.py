@@ -56,7 +56,7 @@ class KaiboshGame(Game):
             raise GameProcedureError('Bid too low. Must be above %s' % self.high_bid[1])
         if bid != 0:
             self.high_bid = (player, bid)
-        self.response = u'%s bids %s' % (player, bid)
+        self.response = u'%s bids %s'.encode('utf-8') % (player, bid)
         self.next_player = self.players[(self.players.index(self.next_player) + 1) % len(self.players)]
         if self.next_player == self.lead_player or bid == 12:
             # the bid went all the way around or someone kaiboshed!

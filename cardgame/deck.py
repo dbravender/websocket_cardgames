@@ -31,8 +31,7 @@ class Suit(object):
         self.color = color
 
     def __repr__(self):
-        return '<span style="color:%s">%s</span>'.encode('utf-8') % (self.color, 
-                                                                      self.symbol)
+        return u'<span style="color:'.encode('utf-8') + self.color.encode('utf-8') + u'">'.encode('utf-8') + self.symbol.encode('utf-8') + u'</span>'.encode('utf-8')
 
 Suits = {'Hearts'  : Suit(u'Hearts'  , u'♥', u'red'  ),
          'Spades'  : Suit(u'Spades'  , u'♠', u'black'),
