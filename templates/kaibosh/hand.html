@@ -1,8 +1,8 @@
 <script>
 {% if player.game.next_player == player %}
-$('#hand').css({'background': 'red'})
+$('body').css({'background': '#c3e9ff'})
 {% else %}
-$('#hand').css({'background': 'white'})
+$('body').css({'background': 'white'})
 {% end %}
 </script>
 
@@ -23,12 +23,6 @@ $('#hand').css({'background': 'white'})
 {% for card in player.hand %}
 <a href="#" onclick="ws.send('{{ player.remember(player.play_card, card) }}');">{{ card.image() }}</a>
 {% end %}
-
-<div>
-{% if player.game.state == 'play_card' %}
-Trump: {{ player.game.trump }}
-{% end %}
-</div>
 
 {% if len(player.game.players) == 4 %}
 <div class="score" style="height: 5em; overflow: auto;">

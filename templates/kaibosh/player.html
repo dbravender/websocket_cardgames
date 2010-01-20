@@ -60,7 +60,7 @@ $(document).ready(function() {
             $('#messages').prepend(msg.data + '<br/>');
         } else {
             if (soundEnabled) soundManager.play('message');
-            $('#messages').prepend(msg.data + '<br/>');
+            if (msg.data) $('#messages').prepend(msg.data + '<br/>');
         }
     }
 

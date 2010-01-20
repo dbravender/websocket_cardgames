@@ -31,7 +31,7 @@ class Suit(object):
         self.color = color
 
     def __repr__(self):
-        return '<span style="color=%s;">%s</span>'.encode('utf-8') % (self.color, 
+        return '<span style="color:%s">%s</span>'.encode('utf-8') % (self.color, 
                                                                       self.symbol)
 
 Suits = {'Hearts'  : Suit(u'Hearts'  , u'♥', u'red'  ),
@@ -45,10 +45,13 @@ class Card(object):
         self.suit = suit
 
     def image(self):
-        return u'<img src="/static/cards/%s%s.png"/>'.encode('utf-8') % (self.value.name, self.suit.name)
+        return u'<img border="0" src="/static/cards/%s%s.png"/>'.encode('utf-8') % (self.value.name, self.suit.name)
 
     def __repr__(self):
-        return u'%s%s'.encode('utf-8') % (self.value.name, self.suit.symbol)
+        return u'<span style="color:%s">%s%s</span>'.encode('utf-8') % (
+                  self.suit.color,
+                  self.value.name, 
+                  self.suit.symbol)
 
 class FullDeck(object):
     def __init__(self):

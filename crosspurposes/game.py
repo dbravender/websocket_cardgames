@@ -133,7 +133,6 @@ class CrossPurposesGame(Game):
         player.hand.remove(card)
         card.player = player
         self.trick_cards.append(card)
-        self.response = u'%s played %s'.encode('utf-8') % (player.name, card)
         self.next_player = self.players[(self.players.index(self.next_player) + 1) % len(self.players)]
         if len(self.trick_cards) >= self.number_of_players:
             self.trick_cards.sort(self.trick_sorter)

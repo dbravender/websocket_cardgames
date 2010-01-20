@@ -108,7 +108,6 @@ class KaiboshGame(Game):
         player.hand.remove(card)
         card.player = player
         self.trick_cards.append(card)
-        self.response = u'%s played %s'.encode('utf-8') % (player.name, card)
         self.next_player = self.players[(self.players.index(self.next_player) + 1) % len(self.players)]
         if self.high_bid[1] == 12 and self.next_player == self.partners[self.high_bid[0]]:
             self.next_player = self.players[(self.players.index(self.next_player) + 1) % len(self.players)]
