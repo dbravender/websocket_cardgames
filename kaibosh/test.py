@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from game import KaiboshGame, OutOfTurn, MustFollowSuit
 from cardgame.deck import Suits, Values, Card
 from player import Player
@@ -25,7 +27,7 @@ class TestKaibosh(object):
         p1 = Player('Alice', g)
         p2 = Player('Bob', g)
         p3 = Player('Chuck', g)
-        p4 = Player('Dan', g)
+        p4 = Player(u'댄', g)
         self.players = [p1, p2, p3, p4]
         assert g.state == 'add_player'
         g.add_player(p1, p1)
@@ -56,9 +58,11 @@ class TestKaibosh(object):
             assert True
         p3.bid(4)
         p4.bid(0)
+        assert g.score == [{'bidder': p3, 'bid': 4, 'trump': None, 'made_it': None, 'scores': [None, None]}]
         assert g.high_bid == (p3, 4)
         assert g.state == 'name_trump'
         p3.name_trump(Suits['Hearts'])
+        assert g.score == [{'bidder': p3, 'bid': 4, 'trump': Suits['Hearts'], 'made_it': None, 'scores': [None, None]}]
         assert g.state == 'play_card'
         assert g.next_player == p1
         p1.play_card(jack_of_hearts)
@@ -80,7 +84,7 @@ class TestKaibosh(object):
         p4.play_card(ten_of_spades)
         assert g.tricks_won[p1] == 1
         assert g.next_player == p1
-        for i in xrange(5): #@UnusedVariable
+        for _ in xrange(5):
             p1.play_card(jack_of_hearts)
             p2.play_card(jack_of_diamonds)
             p3.play_card(queen_of_clubs)
@@ -105,15 +109,16 @@ class TestKaibosh(object):
         assert g.state == 'name_trump'
         assert g.next_player == p3
         p3.name_trump(Suits['Diamonds'])
-        for i in xrange(6): #@UnusedVariable
+        for _ in xrange(6):
             p3.play_card(jack_of_diamonds)
             p4.play_card(ten_of_spades)
             p2.play_card(queen_of_clubs)
             self.render_template()
-        assert p3.score == 18
-        assert p1.score == 18
-        assert p2.score == 0
-        assert p4.score == 0
+        assert g.score[0] == {'bidder' : p3,
+                              'bid'    : 12,
+                              'trump'  : Suits['Diamonds'],
+                              'made_it': True,
+                              'scores' : [18, 0]}
 
     def render_template(self):
         import os, sys

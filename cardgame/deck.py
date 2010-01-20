@@ -25,17 +25,19 @@ Values = {'2' : Value(u'2' , 2),
           'A' : Value(u'A' , 14)}
 
 class Suit(object):
-    def __init__(self, name, symbol):
+    def __init__(self, name, symbol, color):
         self.name = name
         self.symbol = symbol
+        self.color = color
 
     def __repr__(self):
-        return self.symbol.encode('utf-8')
+        return '<span style="color=%s;">%s</span>'.encode('utf-8') % (self.color, 
+                                                                      self.symbol)
 
-Suits = {'Hearts'  : Suit(u'Hearts'  , u'♥'),
-         'Spades'  : Suit(u'Spades'  , u'♠'),
-         'Diamonds': Suit(u'Diamonds', u'♦'),
-         'Clubs'   : Suit(u'Clubs'   , u'♣')}
+Suits = {'Hearts'  : Suit(u'Hearts'  , u'♥', u'red'  ),
+         'Spades'  : Suit(u'Spades'  , u'♠', u'black'),
+         'Diamonds': Suit(u'Diamonds', u'♦', u'red'  ),
+         'Clubs'   : Suit(u'Clubs'   , u'♣', u'black')}
 
 class Card(object):
     def __init__(self, value, suit):

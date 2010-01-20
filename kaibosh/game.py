@@ -25,6 +25,7 @@ class KaiboshGame(Game):
         self.last_trick_cards = []
         self.player_template = 'kaibosh/player.html'
         self.hand_template = 'kaibosh/hand.html'
+        self.score = []
         super(KaiboshGame, self).__init__(*args, **kwargs)
 
     def deal(self):
@@ -59,6 +60,12 @@ class KaiboshGame(Game):
         self.next_player = self.players[(self.players.index(self.next_player) + 1) % len(self.players)]
         if self.next_player == self.lead_player or bid == 12:
             # the bid went all the way around or someone kaiboshed!
+            self.score.insert(0, {'bidder' : self.high_bid[0],
+                                  'bid'    : self.high_bid[1],
+                                  'made_it': None,
+                                  'trump'  : None,
+                                  'scores' : [None, None]
+                                 })
             self.state = 'name_trump'
             if bid == 12:
                 self.lead_player = self.high_bid[0]
@@ -70,6 +77,7 @@ class KaiboshGame(Game):
         for p in self.players:
             p.sort_hand()
         self.send(u'%s named %s trump'.encode('utf-8') % (player, trump))
+        self.score[0]['trump'] = self.trump
         self.next_player = self.lead_player
         self.start_trick()
 
@@ -120,7 +128,7 @@ class KaiboshGame(Game):
     def end_hand(self):
         partners = [(self.players[0], self.players[2]),
                     (self.players[1], self.players[3])]
-        didnt_make_it = False
+        made_it = True
         for ps in partners:
             score = self.tricks_won[ps[0]] + self.tricks_won[ps[1]]
             if self.high_bid[0] in ps and self.high_bid[1] == 12:
@@ -130,15 +138,19 @@ class KaiboshGame(Game):
             if self.high_bid[0] in ps:
                 if score < self.high_bid[1]:
                     score = - self.high_bid[1]
-                    didnt_make_it = True
+                    made_it = False
                 ps[0].score += score
                 ps[1].score += score
-        if didnt_make_it:
+        if not made_it:
             for ps in partners:
                 score = self.tricks_won[ps[0]] + self.tricks_won[ps[1]]
                 if self.high_bid[0] not in ps:
                     ps[0].score += score
                     ps[1].score += score
+        # Update the score in place
+        bid_score = self.score[0]
+        bid_score['made_it'] = made_it
+        bid_score['scores'] = [self.players[0].score, self.players[1].score]
         self.deal()
 
     def card_sorter(self, trump, led_suit):
