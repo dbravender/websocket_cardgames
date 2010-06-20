@@ -4,6 +4,8 @@
 </head>
 <body>
 
+Welcome {{ user }}!<br/><br/>
+
 {% for game in games %}
 {% if len(game.players) < game.number_of_players %}
 <a href="{{ game.url }}">join</a>
