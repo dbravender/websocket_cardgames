@@ -38,3 +38,14 @@ class Player(player.Player):
             if a.suit < b.suit:
                 return 1
         return sort
+
+    def partner(self):
+        return self.game.partners[self]
+
+    def opponents(self):
+        os = []
+        for p in self.game.partners.values():
+            if p not in [self, self.partner()]:
+                os.append(p)
+        return os
+

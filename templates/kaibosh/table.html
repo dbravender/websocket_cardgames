@@ -6,14 +6,77 @@ $('body').css({'background': 'white'})
 {% end %}
 </script>
 
-{% if getattr(player.game, 'trick_cards', None) %}
+<style>
+.player-name {
+    position: relative; top: -1.5em;
+    background: white;
+    border: 1px solid black;
+}
+
+.player-name.active {
+    background: yellow;
+}
+</style>
+
 <div>
-<h3>Current Trick</h3>
-{% for card in player.game.trick_cards %}
-    {{ card.player.name }} {{ card.image() }}
-{% end %}
+<table id="card-table">
+<tr>
+    <td></td>
+    <td>
+        {{ player.game.card_from.get(player.game.partners[player], '') }}
+        <div class="player-name {{ player.game.next_player == player.game.partners[player] and 'active' or '' }}">
+        {{ player.game.partners[player].name }}
+        {% if player.game.state == 'bid' %}
+          ({{ player.game.bids[player.game.partners[player]] }})
+        {% else %}
+          ({{ player.game.tricks_won[player.game.partners[player]] }})
+        {% end %}
+        </div>
+    </td>
+    <td></td>
+</tr>
+<tr>
+    <td>
+        {{ player.game.card_from.get(player.opponents()[0], '') }}
+        <div class="player-name {{ player.game.next_player == player.opponents()[0] and 'active' or '' }}">
+        {{ player.opponents()[0].name }}
+        {% if player.game.state == 'bid' %}
+            ({{ player.game.bids[player.opponents()[0]] }})
+        {% else %}
+            ({{ player.game.tricks_won[player.opponents()[0]] }})
+        {% end %}
+        </div>
+    </td>
+    <td></td>
+    <td>
+        {{ player.game.card_from.get(player.opponents()[1], '') }}
+        <div class="player-name {{ player.game.next_player == player.opponents()[1] and 'active' or '' }}">
+        {{ player.opponents()[1].name }}
+        {% if player.game.state == 'bid' %}
+            ({{ player.game.bids[player.opponents()[1]] }})
+        {% else %}
+            ({{ player.game.tricks_won[player.opponents()[1]] }})
+        {% end %}
+        </div>
+    </td>
+</tr>
+<tr>
+    <td></td>
+    <td>
+        {{ player.game.card_from.get(player, '') }}
+        <div class="player-name {{ player.game.next_player == player and 'active' or '' }}">
+        {{ player.name }}
+        {% if player.game.state == 'bid' %}
+            ({{ player.game.bids[player] }})
+        {% else %}
+            ({{ player.game.tricks_won[player] }})
+        {% end %}
+        </div>
+    </td>
+    <td></td>
+</tr>
+</table>
 </div>
-{% end %}
 
 {% if getattr(player.game, 'last_trick_cards', None) %}
 <div>

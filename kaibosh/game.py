@@ -27,6 +27,7 @@ class KaiboshGame(Game):
         self.next_player = None
         self.trump = None
         self.tricks_won = {}
+        self.card_from = {}
         self.deck = KaiboshDeck()
         self.number_of_players = 4
         self.high_bid = (None, 0)
@@ -41,24 +42,25 @@ class KaiboshGame(Game):
 
     def deal(self):
         self.deck = KaiboshDeck()
-        self.partners = {self.players[0]: self.players[2],
-                         self.players[2]: self.players[0],
-                         self.players[1]: self.players[3],
-                         self.players[3]: self.players[1]}
+        self.partners = {self.players[2]: self.players[0],
+                         self.players[3]: self.players[1],
+                         self.players[0]: self.players[2],
+                         self.players[1]: self.players[3]}
         for player in self.players:
             hand = self.deck.cards[len(self.deck.cards)-6:]
             self.deck.cards = self.deck.cards[:-6]
             player.receive_hand(hand)
         self.trump = None
         self.tricks_played = 0
-        self.bids = {}
+        self.bids = defaultdict(lambda: '-')
+        self.card_from = {}
         self.trick_cards = []
         self.tricks_won = defaultdict(lambda: 0)
         self.state = 'bid'
         self.next_player = self.dealers.next()
         self.lead_player = self.next_player
         self.high_bid = (None, 0)
-        self.send('update_hand')
+        self.send('update_all')
 
     @message(int)
     def bid(self, player, bid):
@@ -66,7 +68,7 @@ class KaiboshGame(Game):
             raise GameProcedureError('Bid too low. Must be above %s' % self.high_bid[1])
         if bid != 0:
             self.high_bid = (player, bid)
-        self.response = u'%s bids %s'.encode('utf-8') % (player, bid_names[bid])
+        self.bids[player] = bid
         self.next_player = self.players[(self.players.index(self.next_player) + 1) % len(self.players)]
         if self.next_player == self.lead_player or bid == 12:
             # the bid went all the way around or someone kaiboshed!
@@ -80,7 +82,8 @@ class KaiboshGame(Game):
             if bid == 12:
                 self.lead_player = self.high_bid[0]
             self.next_player = self.high_bid[0]
-        self.send('update_hand')
+        self.send('update_hand', self.next_player)
+        self.send('update_table')
 
     @message(Suit)
     def name_trump(self, player, trump):
@@ -90,10 +93,11 @@ class KaiboshGame(Game):
         self.score[0]['trump'] = self.trump
         self.next_player = self.lead_player
         self.start_trick()
-        self.send('update_hand')
+        self.send('update_all')
 
     def start_trick(self):
         self.trick_cards = []
+        self.card_from = {}
         self.state = 'play_card'
 
     def treated_suit(self, card):
@@ -119,6 +123,7 @@ class KaiboshGame(Game):
         player.hand.remove(card)
         card.player = player
         self.trick_cards.append(card)
+        self.card_from[player] = card.image()
         self.send('update_hand', player)
         self.send('update_table')
         self.next_player = self.players[(self.players.index(self.next_player) + 1) % len(self.players)]
