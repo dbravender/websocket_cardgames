@@ -1,0 +1,29 @@
+<script>
+{% if player.game.next_player == player %}
+$('body').css({'background': '#c3e9ff'})
+{% else %}
+$('body').css({'background': 'white'})
+{% end %}
+</script>
+
+{% if len(player.game.players) == 4 %}
+<table width="100%">
+<tr>
+  <td>Bid</td>
+  <td>{{ player.game.players[0] }} & {{ player.game.players[2] }}</td>
+  <td>{{ player.game.players[1] }} & {{ player.game.players[3] }}</td>
+</tr>
+{% for line in player.game.score %}
+<tr>
+  {% if line['made_it'] is None or line['made_it']%}
+  <td>{{ line['bidder'] or ''}} {{ line['bid'] or ''}} {{ line['trump'] or '' }}</td>
+  {% else %}
+  <td>({{ line['bidder'] or ''}} {{ line['bid'] or ''}} {{ line['trump'] or '' }})</td>
+  {% end %}
+  {% for score in line['scores'] %}
+  <td>{{ score }}</td>
+  {% end %}
+</tr>
+{% end %}
+</table>
+{% end %}

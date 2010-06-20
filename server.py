@@ -52,6 +52,9 @@ class QuitHandler(BaseHandler):
 class LobbyHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
+        if not users.has_key(self.get_current_user()):
+            self.redirect('/logout')
+            return
         if users[self.get_current_user()].has_key('game'):
             game = users[self.get_current_user()]['game']
             player = users[self.get_current_user()]['player']
@@ -79,14 +82,15 @@ class NewPlayerHandler(BaseHandler):
         self.game.add_player(player, player)
         users[self.get_current_user()]['player'] = player
         users[self.get_current_user()]['game'] = self.game
+        for template_name, template_file in self.game.templates.iteritems():
+            application.add_handlers(r'.*$',
+                [(self.request.uri + '/' + str(id(player)) + '/' + template_name,
+                 PlayerInfo,
+                 {'player': player, 'template': template_file})])
         application.add_handlers(r'.*$',
             [(self.request.uri + '/' + str(id(player)),
              PlayerInfo,
              {'player': player, 'template': self.game.player_template})])
-        application.add_handlers(r'.*$',
-            [(self.request.uri + '/' + str(id(player)) + '/hand',
-             PlayerInfo,
-             {'player': player, 'template': self.game.hand_template})])
         application.add_handlers(r'.*$',
             [(self.request.uri + '/' + str(id(player)) + '/get',
              PlayerWebSocket,
@@ -114,7 +118,6 @@ class PlayerWebSocket(tornado.websocket.WebSocketHandler):
 
     def on_connection_close(self):
         self.player.left = True
-        self.player.name = 'Open'
         if all([player.left for player in self.player.game.players]):
             games.remove(self.player.game)
 

@@ -32,8 +32,10 @@ class KaiboshGame(Game):
         self.high_bid = (None, 0)
         self.player_factory = Player
         self.last_trick_cards = []
+        self.templates = {'hand' : 'kaibosh/hand.html',
+                          'score': 'kaibosh/score.html',
+                          'table': 'kaibosh/table.html'}
         self.player_template = 'kaibosh/player.html'
-        self.hand_template = 'kaibosh/hand.html'
         self.score = []
         super(KaiboshGame, self).__init__(*args, **kwargs)
 
@@ -56,7 +58,7 @@ class KaiboshGame(Game):
         self.next_player = self.dealers.next()
         self.lead_player = self.next_player
         self.high_bid = (None, 0)
-        self.send('New hand')
+        self.send('update_hand')
 
     @message(int)
     def bid(self, player, bid):
@@ -78,16 +80,17 @@ class KaiboshGame(Game):
             if bid == 12:
                 self.lead_player = self.high_bid[0]
             self.next_player = self.high_bid[0]
+        self.send('update_hand')
 
     @message(Suit)
     def name_trump(self, player, trump):
         self.trump = trump
         for p in self.players:
             p.sort_hand()
-        self.send(u'%s named %s trump'.encode('utf-8') % (player, trump))
         self.score[0]['trump'] = self.trump
         self.next_player = self.lead_player
         self.start_trick()
+        self.send('update_hand')
 
     def start_trick(self):
         self.trick_cards = []
@@ -116,6 +119,8 @@ class KaiboshGame(Game):
         player.hand.remove(card)
         card.player = player
         self.trick_cards.append(card)
+        self.send('update_hand', player)
+        self.send('update_table')
         self.next_player = self.players[(self.players.index(self.next_player) + 1) % len(self.players)]
         if self.high_bid[1] == 12 and self.next_player == self.partners[self.high_bid[0]]:
             self.next_player = self.players[(self.players.index(self.next_player) + 1) % len(self.players)]
@@ -124,9 +129,9 @@ class KaiboshGame(Game):
             winner = sorted(self.trick_cards, self.trick_sorter)[0].player
             self.tricks_won[winner] += 1
             self.next_player = winner
-            self.response = u'Trick won by %s'.encode('utf-8') % winner
             self.tricks_played += 1
             self.last_trick_cards = self.trick_cards[:]
+            self.send('update_table')
             if self.tricks_played >= 6:
                 self.end_hand()
             else:
@@ -159,6 +164,7 @@ class KaiboshGame(Game):
         bid_score['made_it'] = made_it
         bid_score['scores'] = [self.players[0].score, self.players[1].score]
         self.deal()
+        self.send('update_all')
 
     def card_sorter(self, trump, led_suit):
         def sorter(a, b):

@@ -1,0 +1,25 @@
+<script>
+{% if player.game.next_player == player %}
+$('body').css({'background': '#c3e9ff'})
+{% else %}
+$('body').css({'background': 'white'})
+{% end %}
+</script>
+
+{% if getattr(player.game, 'trick_cards', None) %}
+<div>
+<h3>Current Trick</h3>
+{% for card in player.game.trick_cards %}
+    {{ card.player.name }} {{ card.image() }}
+{% end %}
+</div>
+{% end %}
+
+{% if getattr(player.game, 'last_trick_cards', None) %}
+<div>
+<h3>Last Trick</h3>
+{% for card in player.game.last_trick_cards %}
+    {{ card.player.name }} {{ card.image() }}
+{% end %}
+</div>
+{% end %}
