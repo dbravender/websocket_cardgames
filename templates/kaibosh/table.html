@@ -37,25 +37,25 @@ $('body').css({'background': 'white'})
 </tr>
 <tr>
     <td>
-        {{ player.game.card_from.get(player.opponents()[0], '') }}
-        <div class="player-name {{ player.game.next_player == player.opponents()[0] and 'active' or '' }}">
-        {{ player.opponents()[0].name }}
+        {{ player.game.card_from.get(player.get_left_player(), '') }}
+        <div class="player-name {{ player.game.next_player == player.get_left_player() and 'active' or '' }}">
+        {{ player.get_left_player().name }}
         {% if player.game.state == 'bid' %}
-            ({{ player.game.bids[player.opponents()[0]] }})
+            ({{ player.game.bids[player.get_left_player()] }})
         {% else %}
-            ({{ player.game.tricks_won[player.opponents()[0]] }})
+            ({{ player.game.tricks_won[player.get_left_player()] }})
         {% end %}
         </div>
     </td>
     <td></td>
     <td>
-        {{ player.game.card_from.get(player.opponents()[1], '') }}
-        <div class="player-name {{ player.game.next_player == player.opponents()[1] and 'active' or '' }}">
-        {{ player.opponents()[1].name }}
+        {{ player.game.card_from.get(player.get_right_player(), '') }}
+        <div class="player-name {{ player.game.next_player == player.get_right_player() and 'active' or '' }}">
+        {{ player.get_right_player().name }}
         {% if player.game.state == 'bid' %}
-            ({{ player.game.bids[player.opponents()[1]] }})
+            ({{ player.game.bids[player.get_right_player()] }})
         {% else %}
-            ({{ player.game.tricks_won[player.opponents()[1]] }})
+            ({{ player.game.tricks_won[player.get_right_player()] }})
         {% end %}
         </div>
     </td>

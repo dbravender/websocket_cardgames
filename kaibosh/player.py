@@ -1,6 +1,7 @@
 from cardgame import player
 from cardgame.deck import Values
 from kaibosh.game import SameColor
+from itertools import cycle
 
 class Player(player.Player):
     def bid(self, bid, message=None):
@@ -48,4 +49,18 @@ class Player(player.Player):
             if p not in [self, self.partner()]:
                 os.append(p)
         return os
+
+    def get_right_player(self):
+        pc = cycle(self.game.players)
+        while pc.next() != self:
+            pass
+        pc.next() # skip over left player
+        pc.next() # skip over partner
+        return pc.next()
+
+    def get_left_player(self):
+        pc = cycle(self.game.players)
+        while pc.next() != self:
+            pass
+        return pc.next()
 
