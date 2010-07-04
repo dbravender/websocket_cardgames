@@ -19,7 +19,7 @@ class CrossPurposesGame(Game):
         self.previous_round = {}
         self.player_factory = Player
         self.player_template = 'crosspurposes/player.html'
-        self.hand_template = 'crosspurposes/hand.html'
+        self.templates = {'hand': 'crosspurposes/hand.html'}
         super(CrossPurposesGame, self).__init__(*args, **kwargs)
         if self.number_of_players == 2:
             self.dealers = self.two_player_cycle()
