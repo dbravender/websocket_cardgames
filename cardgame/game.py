@@ -22,7 +22,10 @@ def message(expected_arguments):
                     self.send(getattr(self, self.state).__name__, self.next_player)
             except GameException, e:
                 if hasattr(player, 'socket'):
-                    player.socket.write_message(str(e))
+                    try:
+                        player.socket.write_message(str(e))
+                    except IOError:
+                        pass
                 else:
                     raise e
         wrapper.__name__ = method.__name__

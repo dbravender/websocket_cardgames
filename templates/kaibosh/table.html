@@ -18,6 +18,7 @@ $('body').css({'background': 'white'})
 }
 </style>
 
+{% if hasattr(player.game, 'partners') %}
 <div>
 <table id="card-table">
 <tr>
@@ -77,6 +78,7 @@ $('body').css({'background': 'white'})
 </tr>
 </table>
 </div>
+{% end %}
 
 {% if getattr(player.game, 'last_trick_cards', None) %}
 <div>
