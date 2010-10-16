@@ -109,40 +109,43 @@ class PlayerInfo(BaseHandler):
 class PlayerWebSocket(tornado.websocket.WebSocketHandler):
     def __init__(self, *args, **kwargs):
         self.player = kwargs.pop('player')
+        print 'Creating a new playersocket for %s' % self.player.name
         self.player.socket = self
         self.player.left = False
         super(PlayerWebSocket, self).__init__(*args, **kwargs)
 
     def open(self):
-        self.receive_message(self.on_message)
+        print '%s joined' % (self.player.name)
 
-    def on_connection_close(self):
+    def on_close(self):
+        print '%s left - removing them from the game' % (self.player.name)
         self.player.left = True
         if all([player.left for player in self.player.game.players]):
             try:
                 games.remove(self.player.game)
             except:
+                print 'Tried to remove a player that was NOT in the game'
                 pass
 
     def on_message(self, message):
+        print '%s received "%s"' % (self.player.name, message)
         try:
             params = message.split(' ')
             self.player.callbacks[params[0]](message=' '.join(params[1:]))
         except Exception, e:
             self.player.socket.write_message('Uncaught:' + str(e))
             traceback.print_exc()
-        self.receive_message(self.on_message)
 
 settings = {'static_path'  : os.path.join(os.path.realpath(__file__ + '/../'), 'static'),
             'cookie_secret': 'QU%9B4\'?E$@(D0Q($5?@()".8B&%UOD1M5Y.IMD',
             'login_url'    : '/login'}
 
 application = tornado.web.Application(**settings)
-application.add_handlers('.*$', [(r'/', LobbyHandler)])
-application.add_handlers('.*$', [(r'/new', NewGameHandler)])
-application.add_handlers('.*$', [(r'/login', LoginHandler)])
-application.add_handlers('.*$', [(r'/logout', LogoutHandler)])
-application.add_handlers('.*$', [(r'/quit', QuitHandler)])
+application.add_handlers('.*$', [(r'/', LobbyHandler),
+                                 (r'/new', NewGameHandler),
+                                 (r'/login', LoginHandler),
+                                 (r'/logout', LogoutHandler),
+                                 (r'/quit', QuitHandler)])
 
 if __name__ == '__main__':
     http_server = tornado.httpserver.HTTPServer(application)

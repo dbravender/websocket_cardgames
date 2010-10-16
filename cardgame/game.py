@@ -25,7 +25,7 @@ def message(expected_arguments):
                     try:
                         player.socket.write_message(str(e))
                     except IOError:
-                        pass
+                        print str(e)
                 else:
                     raise e
         wrapper.__name__ = method.__name__
@@ -51,7 +51,13 @@ class Game(object):
         if not recipient:
             for player in self.players:
                 if hasattr(player, 'socket') and player.socket:
-                    player.socket.write_message(message)
+                    try:
+                        player.socket.write_message(message)
+                    except IOError, e:
+                        print str(e)
         else:
             if hasattr(recipient, 'socket') and recipient.socket:
-                recipient.socket.write_message(message)
+                try:
+                    recipient.socket.write_message(message)
+                except IOError:
+                    pass
