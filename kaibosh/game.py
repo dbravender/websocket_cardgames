@@ -118,6 +118,12 @@ class KaiboshGame(Game):
         return (self.treated_suit(card) == self.led_suit
                 or self.led_suit not in map(self.treated_suit, player.hand))
 
+    def get_card(self, player):
+        card = self.card_from.get(player)
+        if not card:
+            return ''
+        return card.image(self.just_played == card)
+
     @message(Card)
     def play_card(self, player, card):
         if len(self.trick_cards) == 0:
@@ -132,7 +138,8 @@ class KaiboshGame(Game):
         player.hand.remove(card)
         card.player = player
         self.trick_cards.append(card)
-        self.card_from[player] = card.image()
+        self.card_from[player] = card
+        self.just_played = card
         self.send('update_hand', player)
         self.send('update_table')
         self.next_player = self.players[(self.players.index(

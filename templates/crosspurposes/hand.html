@@ -19,6 +19,7 @@ $('body').css({'background': 'white'})
 
 <br/>
 {% end %}
+<a href="/quit" style="float: right;">quit</a>
 
 {% for card in player.hand %}
 <a href="#" onclick="ws.send('{{ player.remember(player.play_card, card) }}');">{{ card.image() }}</a>

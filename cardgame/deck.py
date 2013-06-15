@@ -49,14 +49,16 @@ class Card(object):
         self.value = value
         self.suit = suit
 
-    def image(self):
-        return u'<img border="0" src="/static/cards/%s%s.png"/>'.encode('utf-8') % (self.value.name, self.suit.name)
+    def image(self, just_played=False):
+        return (u'<img %s border="0" src="/static/cards/%s%s.png"/>' % (
+            just_played and u'class="just-played"' or u'',
+            self.value.name, self.suit.name)).encode('utf-8')
 
     def __repr__(self):
-        return u'<span style="color:%s">%s%s</span>'.encode('utf-8') % (
-            self.suit.color,
-            self.value.name,
-            self.suit.symbol)
+        return (u'<span style="color:%s">%s%s</span>' % (self.suit.color,
+                                                         self.value.name,
+                                                         self.suit.symbol)
+                ).encode('utf-8')
 
 
 class FullDeck(object):
