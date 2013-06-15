@@ -1,10 +1,32 @@
 <html>
 <head>
 <title>Card Game Lobby</title>
+<script type="text/javascript" src="/static/swfobject.js"></script>
+<script type="text/javascript" src="/static/FABridge.js"></script>
+<script type="text/javascript" src="/static/web_socket.js"></script>
+<script src="/static/jquery.js"></script>
+<script>
+WebSocket.__swfLocation = "/static/WebSocketMain.swf";
+
+$(document).ready(function() {
+  ws = new WebSocket('ws://' + location.hostname + ':' + location.port + '/lobby/{{ id(user) }}');
+
+  ws.onmessage = function(msg) {
+    window.location.reload();
+  }
+});
+</script>
 </head>
 <body>
 
 Welcome {{ user }}!<br/><br/>
+
+Current users:
+{% for a_user in users %}
+{{ a_user }}
+{% end %}
+
+<br/><br/>
 
 {% for game in games %}
 {% if len(game.players) < game.number_of_players %}

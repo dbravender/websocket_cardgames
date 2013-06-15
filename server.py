@@ -38,8 +38,9 @@ class LoginHandler(BaseHandler):
 
     def post(self):
         self.set_secure_cookie("user", self.get_argument("name"))
-        if not users.has_key(self.get_argument('name')):
+        if self.get_argument('name') not in users:
             users[self.get_argument('name')] = {}
+            LobbyWebSocket.update()
         self.redirect("/")
 
 
@@ -58,27 +59,63 @@ class QuitHandler(BaseHandler):
         del user['player']
         del user['game']
         self.redirect('/')
+        LobbyWebSocket.update()
 
 
 class LobbyHandler(BaseHandler):
 
     @tornado.web.authenticated
     def get(self):
-        if not users.has_key(self.get_current_user()):
+        if self.get_current_user() not in users:
             self.redirect('/logout')
             return
-        if users[self.get_current_user()].has_key('game'):
-            game = users[self.get_current_user()]['game']
-            player = users[self.get_current_user()]['player']
+        user = self.get_current_user()
+        if 'game' in users[user]:
+            game = users[user]['game']
+            player = users[user]['player']
             self.redirect('/' + str(id(game)) + '/' + str(id(player)))
             return
         self.write(loader.load('lobby.html').generate(
-            user=self.get_current_user(), games=games, game_factories=game_factories))
+            user=user,
+            games=games,
+            game_factories=game_factories,
+            users=users))
+        application.add_handlers(r'.*$',
+                                 [(r'/lobby/' + str(id(user)),
+                                   LobbyWebSocket,
+                                   {'user': user})])
+
+
+class LobbyWebSocket(tornado.websocket.WebSocketHandler):
+
+    def __init__(self, *args, **kwargs):
+        self.user = users[kwargs.pop('user')]
+        self.user['lobby_socket'] = self
+        print 'Creating a new LobbyWebSocket for %s' % self.user
+        super(LobbyWebSocket, self).__init__(*args, **kwargs)
+
+    def on_close(self):
+        try:
+            del self.user['lobby_socket']
+        except KeyError:
+            pass
+
+    @classmethod
+    def update(self):
+        print 'Updating the lobby'
+        for user in users.values():
+            try:
+                if not 'lobby_socket' in user:
+                    continue
+                user['lobby_socket'].write_message('update')
+            except:
+                traceback.print_exc()
 
 
 class NewGameHandler(BaseHandler):
 
     def get(self):
+        LobbyWebSocket.update()
         players = int(self.get_argument('players', 4))
         game_factory = game_factories[
             self.get_argument('game', 'crosspurposes')]
@@ -140,9 +177,11 @@ class PlayerWebSocket(tornado.websocket.WebSocketHandler):
         super(PlayerWebSocket, self).__init__(*args, **kwargs)
 
     def open(self):
+        LobbyWebSocket.update()
         print '%s joined' % (self.player.name)
 
     def on_close(self):
+        LobbyWebSocket.update()
         print '%s left - removing them from the game' % (self.player.name)
         self.player.left = True
         if all([player.left for player in self.player.game.players]):
@@ -157,7 +196,7 @@ class PlayerWebSocket(tornado.websocket.WebSocketHandler):
         try:
             params = message.split(' ')
             self.player.callbacks[params[0]](message=' '.join(params[1:]))
-        except Exception, e:
+        except Exception as e:
             self.player.socket.write_message('Uncaught:' + str(e))
             traceback.print_exc()
 
@@ -168,6 +207,7 @@ settings = {
 
 application = tornado.web.Application(**settings)
 application.add_handlers('.*$', [(r'/', LobbyHandler),
+                                 (r'/lobby', LobbyWebSocket),
                                  (r'/new', NewGameHandler),
                                  (r'/login', LoginHandler),
                                  (r'/logout', LogoutHandler),
