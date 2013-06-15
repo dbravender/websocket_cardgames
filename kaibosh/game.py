@@ -1,9 +1,12 @@
+import datetime
+
 from cardgame.deck import KaiboshDeck, Card, Suit, Suits, Values
 from collections import defaultdict
 from cardgame.game import (
     Game, GameException, GameProcedureError, message, OutOfTurn
 )
 
+import tornado.ioloop
 
 class MustFollowSuit(GameException):
     pass
@@ -104,9 +107,11 @@ class KaiboshGame(Game):
         self.send('update_all')
 
     def start_trick(self):
+        print 'start_trick'
         self.trick_cards = []
         self.card_from = {}
         self.state = 'play_card'
+        self.send('update_all')
 
     def treated_suit(self, card):
         if card.value == Values['J'] and card.suit == SameColor[self.trump]:
@@ -155,13 +160,17 @@ class KaiboshGame(Game):
             self.next_player = winner
             self.tricks_played += 1
             self.last_trick_cards = self.trick_cards[:]
-            self.send('update_table')
+            next = None
             if self.tricks_played >= 6:
-                self.end_hand()
+                next = self.end_hand
             else:
-                self.start_trick()
+                next = self.start_trick
+            self.state = 'wait'
+            tornado.ioloop.IOLoop.instance().add_timeout(
+                datetime.timedelta(seconds=5), next)
 
     def end_hand(self):
+        print 'end_hand'
         partners = [(self.players[0], self.players[2]),
                     (self.players[1], self.players[3])]
         made_it = True
