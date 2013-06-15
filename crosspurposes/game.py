@@ -1,11 +1,15 @@
 from player import Player
 from cardgame.deck import FullDeck, Card, Suit, Value
 from collections import defaultdict
-from cardgame.game import Game, GameException, message, OutOfTurn, GameProcedureError #@UnusedImport
+from cardgame.game import Game, GameException, message, OutOfTurn, GameProcedureError  # @UnusedImport
 
-class MustFollowSuit(GameException): pass
+
+class MustFollowSuit(GameException):
+    pass
+
 
 class CrossPurposesGame(Game):
+
     def __init__(self, *args, **kwargs):
         self.name = "Cross Purposes"
         self.must_bid = []
@@ -40,7 +44,7 @@ class CrossPurposesGame(Game):
         else:
             self.deck = FullDeck()
         for player in self.players:
-            hand = self.deck.cards[len(self.deck.cards)-13:]
+            hand = self.deck.cards[len(self.deck.cards) - 13:]
             hand.sort()
             self.deck.cards = self.deck.cards[:-13]
             player.receive_hand(hand)
@@ -87,7 +91,8 @@ class CrossPurposesGame(Game):
         if self.number_of_players == 2 or len(self.bids.get(bid, [])):
             if self.get_bid(bid):
                 # Someone else already bid this value
-                raise GameProcedureError(u'%s has already been named!'.encode('utf-8') % self.get_bid(bid))
+                raise GameProcedureError(u'%s has already been named!'.encode(
+                    'utf-8') % self.get_bid(bid))
             if self.number_of_players == 2:
                 self.set_bid(bid)
                 self.response = u'%s names %s'.encode('utf-8') % (player, bid)
@@ -96,20 +101,22 @@ class CrossPurposesGame(Game):
                 self.partners.append(self.bids[bid])
                 self.set_bid(bid)
                 self.response = u'%s and %s name %s'.encode('utf-8') % \
-                                                      (self.bids[bid][0],
-                                                       self.bids[bid][1],
-                                                       bid)
+                    (self.bids[bid][0],
+                     self.bids[bid][1],
+                     bid)
         else:
             self.bids[bid] = [player]
             self.response = u'%s bids %s'.encode('utf-8') % (player, bid)
-        self.next_player = self.players[(self.players.index(self.next_player) + 1) % len(self.players)]
+        self.next_player = self.players[(self.players.index(
+            self.next_player) + 1) % len(self.players)]
         for player in self.players:
                 player.sort_hand()
         self.last_trick_cards = []
         if len(self.partners):
             # Bid goes to the next player who hasn't found a partner yet
             while self.next_player in self.partners[0]:
-                self.next_player = self.players[(self.players.index(self.next_player) + 1) % len(self.players)]
+                self.next_player = self.players[(self.players.index(
+                    self.next_player) + 1) % len(self.players)]
         if self.named_suit and self.named_high:
             self.next_player = self.lead_player
             self.start_trick()
@@ -123,9 +130,9 @@ class CrossPurposesGame(Game):
         if len(self.trick_cards) == 0:
             # The lead card gives us enough info to create the sorter to
             # determine the winning trick
-            self.trick_sorter = self.sort(trump   =self.named_suit,
+            self.trick_sorter = self.sort(trump=self.named_suit,
                                           led_suit=card.suit,
-                                          highest =self.named_high)
+                                          highest=self.named_high)
             self.led_suit = card.suit
         else:
             if card.suit != self.led_suit and self.led_suit in (x.suit for x in player.hand):
@@ -133,7 +140,8 @@ class CrossPurposesGame(Game):
         player.hand.remove(card)
         card.player = player
         self.trick_cards.append(card)
-        self.next_player = self.players[(self.players.index(self.next_player) + 1) % len(self.players)]
+        self.next_player = self.players[(self.players.index(
+            self.next_player) + 1) % len(self.players)]
         if len(self.trick_cards) >= self.number_of_players:
             self.trick_cards.sort(self.trick_sorter)
             winner = self.trick_cards[0].player
@@ -151,14 +159,16 @@ class CrossPurposesGame(Game):
         if self.number_of_players == 2:
             if len(self.previous_round):
                 for player in self.players:
-                    player.score += self.previous_round[player] * self.tricks_won[player]
+                    player.score += self.previous_round[
+                        player] * self.tricks_won[player]
                 self.previous_round = {}
             else:
                 for player in self.players:
                     self.previous_round[player] = self.tricks_won[player] + 1
         else:
             for ps in self.partners:
-                score = (self.tricks_won[ps[0]] + 1) * (self.tricks_won[ps[1]] + 1)
+                score = (self.tricks_won[ps[
+                         0]] + 1) * (self.tricks_won[ps[1]] + 1)
                 ps[0].score += score
                 ps[1].score += score
         self.deal()

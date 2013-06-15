@@ -1,6 +1,8 @@
 from cardgame import player
 
+
 class Player(player.Player):
+
     def bid(self, bid, message=None):
         self.game.bid(self, bid)
 

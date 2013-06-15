@@ -2,6 +2,7 @@ from game import CrossPurposesGame, OutOfTurn, GameProcedureError
 from cardgame.deck import Suits, Values, Card
 from player import Player
 
+
 def test_four_player_game():
     g = CrossPurposesGame()
     p1 = Player('Alice', g)
@@ -55,7 +56,7 @@ def test_four_player_game():
     p4.play_card(p4_card)
     assert g.tricks_won[p1] == 1
     assert g.next_player == p1
-    for i in xrange(12): #@UnusedVariable
+    for i in xrange(12):  # @UnusedVariable
         p1.play_card(p1_card)
         p2.play_card(p2_card)
         p3.play_card(p3_card)
@@ -65,6 +66,7 @@ def test_four_player_game():
     assert p2.score == 14
     assert p3.score == 1
     assert p4.score == 1
+
 
 def test_two_player_game():
     g = CrossPurposesGame(number_of_players=2)

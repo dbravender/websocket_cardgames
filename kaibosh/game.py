@@ -1,14 +1,18 @@
 from cardgame.deck import KaiboshDeck, Card, Suit, Suits, Values
 from collections import defaultdict
-from cardgame.game import Game, GameException, GameProcedureError, message, OutOfTurn #@UnusedImport
+from cardgame.game import (
+    Game, GameException, GameProcedureError, message
+)
 
-class MustFollowSuit(GameException): pass
+
+class MustFollowSuit(GameException):
+    pass
 
 SameColor = {
-    Suits['Hearts']  : Suits['Diamonds'],
+    Suits['Hearts']: Suits['Diamonds'],
     Suits['Diamonds']: Suits['Hearts'],
-    Suits['Clubs']   : Suits['Spades'],
-    Suits['Spades']  : Suits['Clubs']}
+    Suits['Clubs']: Suits['Spades'],
+    Suits['Spades']: Suits['Clubs']}
 
 bid_names = {0:  'pass',
              1:  '1',
@@ -21,7 +25,9 @@ bid_names = {0:  'pass',
 
 from player import Player
 
+
 class KaiboshGame(Game):
+
     def __init__(self, *args, **kwargs):
         self.name = "Kaibosh"
         self.next_player = None
@@ -33,7 +39,7 @@ class KaiboshGame(Game):
         self.high_bid = (None, 0)
         self.player_factory = Player
         self.last_trick_cards = []
-        self.templates = {'hand' : 'kaibosh/hand.html',
+        self.templates = {'hand': 'kaibosh/hand.html',
                           'score': 'kaibosh/score.html',
                           'table': 'kaibosh/table.html'}
         self.player_template = 'kaibosh/player.html'
@@ -47,7 +53,7 @@ class KaiboshGame(Game):
                          self.players[0]: self.players[2],
                          self.players[1]: self.players[3]}
         for player in self.players:
-            hand = self.deck.cards[len(self.deck.cards)-6:]
+            hand = self.deck.cards[len(self.deck.cards) - 6:]
             self.deck.cards = self.deck.cards[:-6]
             player.receive_hand(hand)
         self.trump = None
@@ -65,19 +71,21 @@ class KaiboshGame(Game):
     @message(int)
     def bid(self, player, bid):
         if bid > 0 and bid <= self.high_bid[1]:
-            raise GameProcedureError('Bid too low. Must be above %s' % self.high_bid[1])
+            raise GameProcedureError(
+                'Bid too low. Must be above %s' % self.high_bid[1])
         if bid != 0:
             self.high_bid = (player, bid)
         self.bids[player] = bid
-        self.next_player = self.players[(self.players.index(self.next_player) + 1) % len(self.players)]
+        self.next_player = self.players[(self.players.index(
+            self.next_player) + 1) % len(self.players)]
         if self.next_player == self.lead_player or bid == 12:
             # the bid went all the way around or someone kaiboshed!
-            self.score.insert(0, {'bidder' : self.high_bid[0],
-                                  'bid'    : self.high_bid[1],
+            self.score.insert(0, {'bidder': self.high_bid[0],
+                                  'bid': self.high_bid[1],
                                   'made_it': None,
-                                  'trump'  : None,
-                                  'scores' : ['-', '-']
-                                 })
+                                  'trump': None,
+                                  'scores': ['-', '-']
+                                  })
             self.state = 'name_trump'
             if bid == 12:
                 self.lead_player = self.high_bid[0]
@@ -107,7 +115,8 @@ class KaiboshGame(Game):
             return card.suit
 
     def following_suit(self, card, player):
-        return self.treated_suit(card) == self.led_suit or self.led_suit not in map(self.treated_suit, player.hand)
+        return (self.treated_suit(card) == self.led_suit
+                or self.led_suit not in map(self.treated_suit, player.hand))
 
     @message(Card)
     def play_card(self, player, card):
@@ -115,7 +124,7 @@ class KaiboshGame(Game):
             # The lead card gives us enough info to create the sorter to
             # determine the winning trick
             self.led_suit = self.treated_suit(card)
-            self.trick_sorter = self.card_sorter(trump   =self.trump,
+            self.trick_sorter = self.card_sorter(trump=self.trump,
                                                  led_suit=self.led_suit)
         else:
             if not self.following_suit(card, player):
@@ -126,9 +135,12 @@ class KaiboshGame(Game):
         self.card_from[player] = card.image()
         self.send('update_hand', player)
         self.send('update_table')
-        self.next_player = self.players[(self.players.index(self.next_player) + 1) % len(self.players)]
-        if self.high_bid[1] == 12 and self.next_player == self.partners[self.high_bid[0]]:
-            self.next_player = self.players[(self.players.index(self.next_player) + 1) % len(self.players)]
+        self.next_player = self.players[(self.players.index(
+            self.next_player) + 1) % len(self.players)]
+        if (self.high_bid[1] == 12 and
+                self.next_player == self.partners[self.high_bid[0]]):
+            self.next_player = self.players[(self.players.index(
+                self.next_player) + 1) % len(self.players)]
         if len(self.trick_cards) >= self.number_of_players or \
            (self.high_bid[1] == 12 and len(self.trick_cards) >= 3):
             winner = sorted(self.trick_cards, self.trick_sorter)[0].player

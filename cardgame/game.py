@@ -1,9 +1,18 @@
 from itertools import cycle
 from player import Player
 
-class GameException(Exception): pass
-class GameProcedureError(GameException): pass
-class OutOfTurn(GameException): pass
+
+class GameException(Exception):
+    pass
+
+
+class GameProcedureError(GameException):
+    pass
+
+
+class OutOfTurn(GameException):
+    pass
+
 
 def message(expected_arguments):
     def wrap(method):
@@ -12,14 +21,17 @@ def message(expected_arguments):
                 if self.next_player and player != self.next_player:
                     raise OutOfTurn('Out of Turn!')
                 if self.state != method.__name__:
-                    raise GameProcedureError('Not currently in the state: %s!' % method.__name__)
+                    raise GameProcedureError(
+                        'Not currently in the state: %s!' % method.__name__)
                 if not isinstance(message, expected_arguments):
-                    raise GameProcedureError('Expected different %s but got %s' % (str(type(expected_arguments)), str(type(message))))
+                    raise GameProcedureError('Expected different %s but got %s' % (
+                        str(type(expected_arguments)), str(type(message))))
                 self.response = ''
                 method(self, player, message)
                 self.send(self.response)
                 if self.next_player:
-                    self.send(getattr(self, self.state).__name__, self.next_player)
+                    self.send(getattr(
+                        self, self.state).__name__, self.next_player)
             except GameException, e:
                 if hasattr(player, 'socket'):
                     try:
@@ -32,7 +44,9 @@ def message(expected_arguments):
         return wrapper
     return wrap
 
+
 class Game(object):
+
     def __init__(self, number_of_players=4):
         self.players = []
         self.number_of_players = number_of_players

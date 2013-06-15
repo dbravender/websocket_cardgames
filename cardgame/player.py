@@ -1,4 +1,5 @@
 class Player(object):
+
     def __init__(self, name, game):
         self.hand = []
         self.score = 0
@@ -10,7 +11,8 @@ class Player(object):
     def rename(self, message):
         old_name = self.name
         self.name = message
-        self.game.send(u'%s now goes by %s'.encode('utf-8') % (old_name, self.name))
+        self.game.send(u'%s now goes by %s'.encode(
+            'utf-8') % (old_name, self.name))
 
     def remember(self, callback, *args):
         def doit(message):
