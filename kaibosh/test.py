@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from game import KaiboshGame, OutOfTurn, MustFollowSuit
+from .game import KaiboshGame, OutOfTurn, MustFollowSuit
 from cardgame.deck import Suits, Values, Card
-from player import Player
+from .player import Player
 
 
 class TestKaibosh(object):
@@ -133,5 +133,5 @@ class TestKaibosh(object):
         loader = template.Loader(os.path.join(os.path.join(
             os.path.realpath(__file__) + '/../../'), 'templates'))
         for player in self.players:
-            loader.load(player.game.hand_template).generate(player=player)
-            loader.load(player.game.player_template).generate(player=player)
+            loader.load(player.game.templates['hand']).generate(player=player)
+            loader.load(player.game.templates['hand']).generate(player=player)

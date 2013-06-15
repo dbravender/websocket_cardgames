@@ -1,6 +1,6 @@
-from game import CrossPurposesGame, OutOfTurn, GameProcedureError
+from .game import CrossPurposesGame, OutOfTurn, GameProcedureError
 from cardgame.deck import Suits, Values, Card
-from player import Player
+from .player import Player
 
 
 def test_four_player_game():

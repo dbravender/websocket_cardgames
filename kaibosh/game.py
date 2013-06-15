@@ -1,7 +1,7 @@
 from cardgame.deck import KaiboshDeck, Card, Suit, Suits, Values
 from collections import defaultdict
 from cardgame.game import (
-    Game, GameException, GameProcedureError, message
+    Game, GameException, GameProcedureError, message, OutOfTurn
 )
 
 
@@ -23,7 +23,7 @@ bid_names = {0:  'pass',
              6:  '6',
              12: 'Kaibosh'}
 
-from player import Player
+from .player import Player
 
 
 class KaiboshGame(Game):

@@ -1,4 +1,4 @@
-from player import Player
+from .player import Player
 from cardgame.deck import FullDeck, Card, Suit, Value
 from collections import defaultdict
 from cardgame.game import Game, GameException, message, OutOfTurn, GameProcedureError  # @UnusedImport
@@ -44,8 +44,7 @@ class CrossPurposesGame(Game):
         else:
             self.deck = FullDeck()
         for player in self.players:
-            hand = self.deck.cards[len(self.deck.cards) - 13:]
-            hand.sort()
+            hand = sorted(self.deck.cards[len(self.deck.cards) - 13:])
             self.deck.cards = self.deck.cards[:-13]
             player.receive_hand(hand)
         self.named_suit = None
