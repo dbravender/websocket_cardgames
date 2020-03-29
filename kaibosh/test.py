@@ -1,16 +1,25 @@
 # -*- coding: utf-8 -*-
+from mock import patch
 
 from .game import KaiboshGame, OutOfTurn, MustFollowSuit
 from cardgame.deck import Suits, Values, Card
 from .player import Player
+import kaibosh.game
 
 
 class TestKaibosh(object):
 
+    def setUp(self):
+        # immediately run paused events while testing
+        def runnext(_, n):
+            n()
+
+        kaibosh.game.add_timeout = runnext
+
     def test_sorter(self):
         g = KaiboshGame()
-        sorter = g.card_sorter(trump=Suits[
-                               'Diamonds'], led_suit=Suits['Clubs'])
+        sorter = g.card_sorter(
+            trump=Suits['Diamonds'], led_suit=Suits['Clubs'])
         jack_of_diamonds = Card(Values['J'], Suits['Diamonds'])
         jack_of_hearts = Card(Values['J'], Suits['Hearts'])
         ace_of_clubs = Card(Values['A'], Suits['Clubs'])
@@ -61,13 +70,13 @@ class TestKaibosh(object):
             assert True
         p3.bid(4)
         p4.bid(0)
-        assert g.score == [{
-            'bidder': p3, 'bid': 4, 'trump': None, 'made_it': None, 'scores': ['-', '-']}]
+        assert g.score == [
+            {'bidder': p3, 'bid': 4, 'trump': None, 'made_it': None, 'scores': ['-', '-']}]
         assert g.high_bid == (p3, 4)
         assert g.state == 'name_trump'
         p3.name_trump(Suits['Hearts'])
-        assert g.score == [{'bidder': p3, 'bid': 4, 'trump': Suits[
-            'Hearts'], 'made_it': None, 'scores': ['-', '-']}]
+        assert g.score == [
+            {'bidder': p3, 'bid': 4, 'trump': Suits['Hearts'], 'made_it': None, 'scores': ['-', '-']}]
         assert g.state == 'play_card'
         assert g.next_player == p1
         p1.play_card(jack_of_hearts)

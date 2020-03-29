@@ -57,10 +57,10 @@ class Card(object):
             self.value.name, self.suit.name)).encode('utf-8')
 
     def __repr__(self):
-        return (u'<span style="color:%s">%s%s</span>' % (self.suit.color,
-                                                         self.value.name,
-                                                         self.suit.symbol)
-                ).encode('utf-8')
+        return u'<span style="color:%s">%s%s</span>'.encode('utf-8') % (
+            self.suit.color,
+            self.value.name,
+            self.suit.symbol)
 
 
 class FullDeck(object):

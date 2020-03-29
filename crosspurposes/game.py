@@ -90,8 +90,8 @@ class CrossPurposesGame(Game):
         if self.number_of_players == 2 or len(self.bids.get(bid, [])):
             if self.get_bid(bid):
                 # Someone else already bid this value
-                raise GameProcedureError(u'%s has already been named!'.encode(
-                    'utf-8') % self.get_bid(bid))
+                raise GameProcedureError(
+                    u'%s has already been named!'.encode('utf-8') % self.get_bid(bid))
             if self.number_of_players == 2:
                 self.set_bid(bid)
                 self.response = u'%s names %s'.encode('utf-8') % (player, bid)
@@ -158,16 +158,16 @@ class CrossPurposesGame(Game):
         if self.number_of_players == 2:
             if len(self.previous_round):
                 for player in self.players:
-                    player.score += self.previous_round[
-                        player] * self.tricks_won[player]
+                    player.score += self.previous_round[player] * \
+                        self.tricks_won[player]
                 self.previous_round = {}
             else:
                 for player in self.players:
                     self.previous_round[player] = self.tricks_won[player] + 1
         else:
             for ps in self.partners:
-                score = (self.tricks_won[ps[
-                         0]] + 1) * (self.tricks_won[ps[1]] + 1)
+                score = (self.tricks_won[ps[0]] + 1) * \
+                    (self.tricks_won[ps[1]] + 1)
                 ps[0].score += score
                 ps[1].score += score
         self.deal()

@@ -30,8 +30,8 @@ def message(expected_arguments):
                 method(self, player, message)
                 self.send(self.response)
                 if self.next_player and self.state != 'wait':
-                    self.send(getattr(
-                        self, self.state).__name__, self.next_player)
+                    self.send(getattr(self, self.state).__name__,
+                              self.next_player)
             except GameException, e:
                 if hasattr(player, 'socket'):
                     try:

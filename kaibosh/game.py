@@ -1,3 +1,5 @@
+import tornado.ioloop
+
 from .player import Player
 import datetime
 
@@ -7,7 +9,9 @@ from cardgame.game import (
     Game, GameException, GameProcedureError, message, OutOfTurn
 )
 
-import tornado.ioloop
+
+def add_timeout(*args):
+    tornado.ioloop.IOLoop.instance().add_timeout(*args)
 
 
 class MustFollowSuit(GameException):
@@ -150,8 +154,7 @@ class KaiboshGame(Game):
         self.send('update_table')
         self.next_player = self.players[(self.players.index(
             self.next_player) + 1) % len(self.players)]
-        if (self.high_bid[1] == 12 and
-                self.next_player == self.partners[self.high_bid[0]]):
+        if self.high_bid[1] == 12 and self.next_player == self.partners[self.high_bid[0]]:
             self.next_player = self.players[(self.players.index(
                 self.next_player) + 1) % len(self.players)]
         if len(self.trick_cards) >= self.number_of_players or \
@@ -167,7 +170,7 @@ class KaiboshGame(Game):
             else:
                 next = self.start_trick
             self.state = 'wait'
-            tornado.ioloop.IOLoop.instance().add_timeout(
+            add_timeout(
                 datetime.timedelta(seconds=5), next)
 
     def end_hand(self):

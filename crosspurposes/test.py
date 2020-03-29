@@ -3,6 +3,7 @@ from cardgame.deck import Suits, Values, Card
 from .player import Player
 
 
+
 def test_four_player_game():
     g = CrossPurposesGame()
     p1 = Player('Alice', g)

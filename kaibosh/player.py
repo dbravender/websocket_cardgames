@@ -1,6 +1,5 @@
 from cardgame import player
 from cardgame.deck import Values
-from kaibosh.game import SameColor
 from itertools import cycle
 
 
@@ -16,6 +15,7 @@ class Player(player.Player):
         self.game.name_trump(self, suit)
 
     def hand_sorter(self):
+        from kaibosh.game import SameColor
         if not self.game.trump:
             return super(Player, self).hand_sorter()
 
