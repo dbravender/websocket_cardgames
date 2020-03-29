@@ -109,7 +109,7 @@ class CrossPurposesGame(Game):
         self.next_player = self.players[(self.players.index(
             self.next_player) + 1) % len(self.players)]
         for player in self.players:
-                player.sort_hand()
+            player.sort_hand()
         self.last_trick_cards = []
         if len(self.partners):
             # Bid goes to the next player who hasn't found a partner yet

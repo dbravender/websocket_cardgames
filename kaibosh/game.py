@@ -1,3 +1,4 @@
+from .player import Player
 import datetime
 
 from cardgame.deck import KaiboshDeck, Card, Suit, Suits, Values
@@ -8,8 +9,10 @@ from cardgame.game import (
 
 import tornado.ioloop
 
+
 class MustFollowSuit(GameException):
     pass
+
 
 SameColor = {
     Suits['Hearts']: Suits['Diamonds'],
@@ -25,8 +28,6 @@ bid_names = {0:  'pass',
              5:  '5',
              6:  '6',
              12: 'Kaibosh'}
-
-from .player import Player
 
 
 class KaiboshGame(Game):

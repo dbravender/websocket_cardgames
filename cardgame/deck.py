@@ -12,6 +12,7 @@ class Value(object):
     def __repr__(self):
         return self.name.encode('utf-8')
 
+
 Values = {'2': Value(u'2', 2),
           '3': Value(u'3', 3),
           '4': Value(u'4', 4),
@@ -36,6 +37,7 @@ class Suit(object):
 
     def __repr__(self):
         return u'<span style="color:'.encode('utf-8') + self.color.encode('utf-8') + u'">'.encode('utf-8') + self.symbol.encode('utf-8') + u'</span>'.encode('utf-8')
+
 
 Suits = {'Hearts': Suit(u'Hearts', u'♥', u'red'),
          'Spades': Suit(u'Spades', u'♠', u'black'),
