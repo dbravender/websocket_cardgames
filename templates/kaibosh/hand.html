@@ -9,18 +9,18 @@ $('body').css({'background': 'white'})
 
 {% if player.game.state == 'bid' and player.game.next_player == player %}
 {% for bid in [('pass', 0), ('1', 1), ('2', 2), ('3', 3), ('4', 4), ('5', 5), ('6', 6), ('kaibosh', 12)] %}
-<a href="#" onclick="ws.send('{{ player.remember(player.bid, bid[1]) }}');">{{ bid[0] }}</a> 
+<a href="#" onclick="readySounds(); ws.send('{{ player.remember(player.bid, bid[1]) }}');">{{ bid[0] }}</a>
 {% end %}
 {% end %}
 
 {% if player.game.state == 'name_trump' and player.game.next_player == player %}
 {% for suit in sorted(suits.values()) %}
-<a href="#" onclick="ws.send('{{ player.remember(player.name_trump, suit) }}');">{{ suit }}</a> 
+<a href="#" onclick="readySounds(); ws.send('{{ player.remember(player.name_trump, suit) }}');">{{ suit }}</a>
 {% end %}
 {% end %}
 
 <br/>
 
 {% for card in player.hand %}
-<a href="#" onclick="ws.send('{{ player.remember(player.play_card, card) }}');">{{ card.image() }}</a>
+<a href="#" onclick="readySounds(); ws.send('{{ player.remember(player.play_card, card) }}');">{{ card.image() }}</a>
 {% end %}
