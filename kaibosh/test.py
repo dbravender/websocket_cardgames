@@ -4,10 +4,12 @@ from game import KaiboshGame, OutOfTurn, MustFollowSuit
 from cardgame.deck import Suits, Values, Card
 from player import Player
 
+
 class TestKaibosh(object):
     def test_sorter(self):
         g = KaiboshGame()
-        sorter = g.card_sorter(trump=Suits['Diamonds'], led_suit=Suits['Clubs'])
+        sorter = g.card_sorter(
+            trump=Suits['Diamonds'], led_suit=Suits['Clubs'])
         jack_of_diamonds = Card(Values['J'], Suits['Diamonds'])
         jack_of_hearts = Card(Values['J'], Suits['Hearts'])
         ace_of_clubs = Card(Values['A'], Suits['Clubs'])
@@ -58,11 +60,13 @@ class TestKaibosh(object):
             assert True
         p3.bid(4)
         p4.bid(0)
-        assert g.score == [{'bidder': p3, 'bid': 4, 'trump': None, 'made_it': None, 'scores': ['-', '-']}]
+        assert g.score == [
+            {'bidder': p3, 'bid': 4, 'trump': None, 'made_it': None, 'scores': ['-', '-']}]
         assert g.high_bid == (p3, 4)
         assert g.state == 'name_trump'
         p3.name_trump(Suits['Hearts'])
-        assert g.score == [{'bidder': p3, 'bid': 4, 'trump': Suits['Hearts'], 'made_it': None, 'scores': ['-', '-']}]
+        assert g.score == [
+            {'bidder': p3, 'bid': 4, 'trump': Suits['Hearts'], 'made_it': None, 'scores': ['-', '-']}]
         assert g.state == 'play_card'
         assert g.next_player == p1
         p1.play_card(jack_of_hearts)
@@ -114,17 +118,19 @@ class TestKaibosh(object):
             p4.play_card(ten_of_spades)
             p2.play_card(queen_of_clubs)
             self.render_template()
-        assert g.score[0] == {'bidder' : p3,
-                              'bid'    : 12,
-                              'trump'  : Suits['Diamonds'],
+        assert g.score[0] == {'bidder': p3,
+                              'bid': 12,
+                              'trump': Suits['Diamonds'],
                               'made_it': True,
-                              'scores' : [18, 0]}
+                              'scores': [18, 0]}
 
     def render_template(self):
-        import os, sys
+        import os
+        import sys
         sys.path.append('tornado')
         from tornado import template
-        loader = template.Loader(os.path.join(os.path.join(os.path.realpath(__file__) + '/../../'), 'templates')) 
+        loader = template.Loader(os.path.join(os.path.join(
+            os.path.realpath(__file__) + '/../../'), 'templates'))
         for player in self.players:
             loader.load(player.game.hand_template).generate(player=player)
             loader.load(player.game.player_template).generate(player=player)

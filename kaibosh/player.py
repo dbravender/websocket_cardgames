@@ -3,6 +3,7 @@ from cardgame.deck import Values
 from kaibosh.game import SameColor
 from itertools import cycle
 
+
 class Player(player.Player):
     def bid(self, bid, message=None):
         self.game.bid(self, bid)
@@ -16,6 +17,7 @@ class Player(player.Player):
     def hand_sorter(self):
         if not self.game.trump:
             return super(Player, self).hand_sorter()
+
         def sort(a, b):
             if a.suit == self.game.trump and a.value == Values['J']:
                 return -1
@@ -54,8 +56,8 @@ class Player(player.Player):
         pc = cycle(self.game.players)
         while pc.next() != self:
             pass
-        pc.next() # skip over left player
-        pc.next() # skip over partner
+        pc.next()  # skip over left player
+        pc.next()  # skip over partner
         return pc.next()
 
     def get_left_player(self):
@@ -63,4 +65,3 @@ class Player(player.Player):
         while pc.next() != self:
             pass
         return pc.next()
-
