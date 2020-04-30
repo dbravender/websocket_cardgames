@@ -43,7 +43,7 @@ soundManager.onready(function(status) {
 });
 
 function update_hand() {
-    $('#hand').load('http://' + location.hostname + ':' + location.port + location.pathname + '/hand');
+    $('#hand').load('//' + location.hostname + ':' + location.port + location.pathname + '/hand');
 }
 
 $(document).ready(function() {
@@ -88,18 +88,6 @@ Sounds? <input type="checkbox" id="sound-enabled" onchange="soundEnabled = !soun
 </td>
 </tr>
 </table>
-<!-- Piwik -->
-<script type="text/javascript">
-var pkBaseURL = (("https:" == document.location.protocol) ? "https://dan.bravender.us/~dbravender/piwik/" : "http://dan.bravender.us/~dbravender/piwik/");
-document.write(unescape("%3Cscript src='" + pkBaseURL + "piwik.js' type='text/javascript'%3E%3C/script%3E"));
-</script><script type="text/javascript">
-try {
-    var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", 9);
-    piwikTracker.trackPageView();
-    piwikTracker.enableLinkTracking();
-} catch( err ) {}
-</script><noscript><p><img src="http://dan.bravender.us/~dbravender/piwik/piwik.php?idsite=9" style="border:0" alt=""/></p></noscript>
-<!-- End Piwik Tag -->
 </body>
 </html>
 

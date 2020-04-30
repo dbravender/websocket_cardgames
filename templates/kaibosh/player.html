@@ -24,7 +24,7 @@ function update(div) {
         update('table');
         return;
     }
-    $('#' + div).load('http://' + location.hostname + ':' + location.port + location.pathname + '/' + div);
+    $('#' + div).load('//' + location.hostname + ':' + location.port + location.pathname + '/' + div);
 }
 
 $(document).ready(function() {
