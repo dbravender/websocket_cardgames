@@ -9,7 +9,7 @@
 WebSocket.__swfLocation = "/static/WebSocketMain.swf";
 
 $(document).ready(function() {
-  ws = new WebSocket('ws://' + location.hostname + ':' + location.port + '/lobby/{{ id(user) }}');
+  ws = new WebSocket('wss://' + location.hostname + ':' + location.port + '/lobby/{{ id(user) }}');
 
   ws.onmessage = function(msg) {
     window.location.reload();

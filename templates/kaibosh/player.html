@@ -28,7 +28,7 @@ function update(div) {
 }
 
 $(document).ready(function() {
-    ws = new WebSocket('ws://' + location.hostname + ':' + location.port + location.pathname + '/get');
+    ws = new WebSocket('wss://' + location.hostname + ':' + location.port + location.pathname + '/get');
     update('all');
 
     ws.onmessage = function(msg) {

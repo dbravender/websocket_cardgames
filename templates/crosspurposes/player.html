@@ -47,7 +47,7 @@ function update_hand() {
 }
 
 $(document).ready(function() {
-    ws = new WebSocket('ws://' + location.hostname + ':' + location.port + location.pathname + '/get')
+    ws = new WebSocket('wss://' + location.hostname + ':' + location.port + location.pathname + '/get')
     
     ws.onmessage = function(msg) {
         update_hand();
